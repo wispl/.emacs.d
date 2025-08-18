@@ -66,10 +66,6 @@
       create-lockfiles nil
       ;; 80 is much better than what it was before...
       fill-column 80
-      ;; Nicer word wrapping (wrap at whitespace) and truncate rather than show
-      ;; the whole line split across several lines
-      word-wrap t
-      truncate-lines t
       ;; No need to have duplicates...
       kill-do-not-save-duplicates t
       ;; Vertical splits over horizontal ones
@@ -83,6 +79,8 @@
       window-divider-default-bottom-width 1
       window-divider-default-right-width 1)
 (add-hook 'on-init-ui-hook #'window-divider-mode)
+;; Truncate lines instead of wrapping when in prog mode
+(add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
 ;; Set encoding
 (set-language-environment "UTF-8")
 (setq default-input-method nil)
@@ -172,7 +170,10 @@
   (general-create-definer leader-keys
     :states '(normal visual)
     :keymaps 'override
-    :prefix "SPC"))
+    :prefix "SPC")
+  (general-create-definer localleader-keys
+    :states '(normal visual)
+    :prefix "SPC l"))
 ;;
 ;;; Little package to add extra hooks like on-first-input and
 ;;; on-init-ui-hook. This mirrors doom emacs style and prevents blanket
@@ -214,12 +215,13 @@
   :ensure nil
   :general
   (leader-keys
-    "pr" '("project recompile" . project-recompile)
-    "pc" '("project compile" . project-compile)
-    "pp" '("project projects" . project-switch-project)
-    "px" '("project kill buffers" . project-kill-buffers)
-    "pf" '("project files" . project-find-file)
-    "ps" '("project search" . project-search)))
+    :infix "p"
+    "r" '("project recompile" . project-recompile)
+    "c" '("project compile" . project-compile)
+    "p" '("project projects" . project-switch-project)
+    "x" '("project kill buffers" . project-kill-buffers)
+    "f" '("project files" . project-find-file)
+    "s" '("project search" . project-search)))
 ;;;
 ;;; For when I don't need a full terminal, although eshell can integrate with
 ;;; eat if need be.
@@ -256,8 +258,8 @@
   ;; practice, this should mean anything using emacs-startup hook should load
   ;; after evil, if it depends on evil.
   :hook (emacs-startup . evil-mode)
-  :preface
-  ;; We want these loaded before evil is loaded so set them in preface.  Well,
+  :init
+  ;; We want these loaded before evil is loaded so set them in init.  Well,
   ;; it is fine for some of them to be loaded later, but ... I am not smart
   ;; enough to know which ones so just load them up front, also more convienent.
   (setq evil-ex-search-vim-style-regexp t
@@ -350,14 +352,15 @@
   ;; (advice-add #'evil-join :override #'better-evil-join)
   ;; Core leader bindings
   (leader-keys
-    "SPC" '("alt buffer" . evil-switch-to-windows-last-buffer)
-    "f"   '("files" . find-file)
-    "pa"  '("project alternate" . ff-find-other-file)
-    "hm"  '("help mode" . describe-mode)
-    "hv"  '("help variable" . describe-variable)
-    "ht"  '("help function" . describe-face)
-    "hf"  '("help function" . describe-function)
-    "hk"  '("help key" . describe-key)))
+    "<tab>" '("find tabs" . tab-bar-select-tab-by-name)
+    "SPC"   '("alt buffer" . evil-switch-to-windows-last-buffer)
+    "f"     '("files" . find-file)
+    "pa"    '("project alternate" . ff-find-other-file)
+    "hm"    '("help mode" . describe-mode)
+    "hv"    '("help variable" . describe-variable)
+    "ht"    '("help function" . describe-face)
+    "hf"    '("help function" . describe-function)
+    "hk"    '("help key" . describe-key)))
 ;;;
 ;;; Modules for extending evil
 ;;;
@@ -935,16 +938,13 @@
 	     (buffer-local-value 'default-directory (current-buffer))
 	     (symbol-at-point))
      nil))
-  ;; TODO: <localleader> ?
-  ;; https://github.com/noctuid/general.el/issues/504
-  (leader-keys
-    "lp" '("latex preview" . preview-at-point)
-    "lP" '("latex unPreview" . preview-clearout-at-point)
-    "lf" '("latex figures" . inkfig)
-    "la" '("latex auto-compile" . auctex-cont-latexmk-toggle)
-    "la" '("latex auto-compile" . auctex-cont-latexmk-toggle)
-    "lc" '("latex compile" . compile-latex)
-    "lv" '("latex view" . TeX-view)))
+  (localleader-keys 'LaTeX-mode-map
+    "p" '("latex preview" . preview-at-point)
+    "P" '("latex unPreview" . preview-clearout-at-point)
+    "f" '("latex figures" . inkfig)
+    "a" '("latex auto-compile" . auctex-cont-latexmk-toggle)
+    "c" '("latex compile" . compile-latex)
+    "v" '("latex view" . TeX-view)))
 ;;;
 ;;; Viewing pdfs and more
 (use-package pdf-tools
