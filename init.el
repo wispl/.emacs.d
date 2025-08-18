@@ -1026,4 +1026,40 @@
 (use-package direnv
   :ensure t
   :hook (on-first-file . direnv-mode))
+;;;
+;;; Calendar in emacs
+(use-package calfw
+  :ensure t
+  :commands cfw:open-calendar-buffer
+  :config
+  ;; Better frame for calendar
+  (setq cfw:face-item-separator-color nil
+	cfw:render-line-breaker 'cfw:render-line-breaker-none
+	cfw:fchar-junction ?╋
+	cfw:fchar-vertical-line ?┃
+	cfw:fchar-horizontal-line ?━
+	cfw:fchar-left-junction ?┣
+	cfw:fchar-right-junction ?┫
+	cfw:fchar-top-junction ?┯
+	cfw:fchar-top-left-corner ?┏
+	cfw:fchar-top-right-corner ?┓)
+  ;; Vim keybindings, subset taken from Doom
+  (general-def 'cfw:calendar-mode-map
+    "h"   #'cfw:navi-previous-day-command
+    "j"   #'cfw:navi-next-week-command
+    "k"   #'cfw:navi-previous-week-command
+    "l"   #'cfw:navi-next-day-command
+    "RET" #'cfw:show-details-command
+    "D"   #'cfw:change-view-day
+    "M"   #'cfw:change-view-month
+    "T"   #'cfw:change-view-two-weeks
+    "W"   #'cfw:change-view-week)
+  (general-def 'cfw:details-mode-map
+    "q"   #'cfw:details-kill-buffer-command))
+;;;
+;;; Integrates org mode events with calfw
+(use-package calfw-org
+  :ensure t
+  :after calfw
+  :commands cfw:open-org-calendar)
 ;;; End of the init file
