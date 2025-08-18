@@ -292,13 +292,15 @@
   (defun smarttab ()
     (interactive)
     (cond ((bound-and-true-p tempel--active) (tempel-next 1))
-	  ((and (bound-and-true-p orgtbl-mode) (org-table-p)) (org-table-next-field))
+	  ((org-at-table-p) (org-table-next-field))
 	  (t (if (not (tempel-expand))
 		 (indent-for-tab-command)))))
-  ;; This one is simple
+  ;; If in a snippet, jump back, otherwise 
   (defun smartshifttab ()
     (interactive)
-    (tempel-previous 1))
+    (cond ((bound-and-true-p tempel--active) (tempel-previous 1))
+	  ((org-at-table-p) (org-table-previous-field))
+	   (t ())))
   ;; Extra insert mode bindings
   (general-def 'insert
     ;; Enter normal mode by entering jk while in insert mode
