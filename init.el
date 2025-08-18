@@ -216,6 +216,7 @@
   :general
   (leader-keys
     :infix "p"
+    "d" '("project diagnostics" . flymake-show-project-diagnostics)
     "r" '("project recompile" . project-recompile)
     "c" '("project compile" . project-compile)
     "p" '("project projects" . project-switch-project)
@@ -237,7 +238,7 @@
   ;; Use config because usually flymake already gets loaded by some other modes
   ;; so we just have to load the keybindings.
   :config
-  (leader-keys "od" '("open diagnostic" . flymake-show-project-diagnostics))
+  (leader-keys "od" '("open diagnostic" . flymake-show-buffer-diagnostics))
   (general-def 'normal
     "]d" '("next diagnostic" . flymake-goto-next-error)
     "[d" '("previous diagnostic" . flymake-goto-prev-error)))
@@ -1147,4 +1148,15 @@
   :ensure t
   :after calfw
   :commands cfw:open-org-calendar)
+;;;
+;;; Formatter
+;;; TODO: decide whether to enable globally
+(use-package apheleia
+  :ensure t)
+;;;
+;;; Flymake backends, mostly for linting
+(use-package flymake-shellcheck
+  :ensure t
+  :hook (sh-mode . flymake-shellcheck-load)
+  :commands flymake-shellcheck-load)
 ;;; End of the init file
