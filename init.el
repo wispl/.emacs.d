@@ -724,30 +724,113 @@
 ;;; Magical unicorn
 (use-package org
   :ensure nil
-  :hook (org-mode . visual-line-mode)
+  :general
+  (leader-keys
+    "na" '("org agenda" . org-agenda)
+    "nn" '("org capture" . org-capture))
   :init
-  ;; Set some nice settings
-  (setq org-auto-align-tags nil
-	;; put tags after the heading, complements with no tag alignment
-	org-tags-column 0
-	;; catch and show errors
-	org-catch-invisible-edits 'show-and-error
-	org-insert-heading-respect-content t
-	;; prettify
-	org-hide-emphasis-markers t
-	org-pretty-entities t
-	;; ditto for agenda
-	org-agenda-tags-column 0)
-  (setq org-directory "~/org/")
-  (setq org-agenda-files '("~/org/agenda.org")))
+  (defun org-init ()
+    ;; Set some nice settings
+    (setq org-auto-align-tags nil
+	  ;; put tags after the heading, complements with no tag alignment
+	  org-tags-column 0
+	  ;; catch and show errors
+	  org-catch-invisible-edits 'show-and-error
+	  org-insert-heading-respect-content t
+	  ;; prettify
+	  org-hide-emphasis-markers t
+	  org-pretty-entities t
+	  ;; ditto for agenda
+	  org-agenda-tags-column 0
+	  ;; show diary entries (birthdays, anniversities) in agenda
+	  org-agenda-include-diary t)
+    ;; Create some org files,
+    ;;   inbox.org is where captured notes go
+    ;;   todo.org is where notes from inbox.org gets filed to
+    ;;   agenda.org is where reoccuring tasks or tasks with a time interval go
+    ;; So captured -> inbox.org -> todo.org
+    (setq org-directory "~/org/"
+          org-agenda-files '("agenda.org" "inbox.org" "todo.org"))
+    ;; Refiling
+    ;; Everything expect for meetings gets forwarded to my inbox where I refile
+    ;; them later, usually at the end of the day
+    (setq org-capture-templates
+	  `(("t" "todo" entry (file "inbox.org")
+	     "* TODO %?\n%U\n%a\n")
+	    ("q" "quick" entry (file "inbox.org")
+	     "* NEXT %?\n%U\n%a\n")
+	    ("n" "note" entry (file "inbox.org")
+	     "* %? :note:\n%U\n%a\n")
+	    ("m" "meeting" entry (file+headline "agenda.org" "Future")
+	     "* %?\n<%<%Y-%m-%d %a %H:00>>\n%a\n")))
+    ;; Refiling
+    (setq org-refile-targets '(("todo.org" :maxlevel . 1)))
+    (setq org-refile-use-outline-path 'file)
+    (setq org-outline-path-complete-in-steps nil)
+    ;; Todo state
+    (setq org-todo-keywords
+	  '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+    ;; Agenda customizations
+    ;; Remove separator horizontal lines
+    (setq org-agenda-block-separator nil)
+    ;; Log DONE tags with :CLOSED [time]
+    (setq org-log-done 'time)
+    ;; Custom version of `n' where NEXT, TODO, and DONE are separated
+    (setq org-agenda-custom-commands
+	  '(("n" "my agenda"
+	     ((agenda ""
+		      ((org-agenda-span 'day)
+		       (org-agenda-time-grid '((daily) (800 1000 1200 1400 1600 1800 2000) "......" "---------------"))
+		       (org-agenda-current-time-string "--- < now > ---")))
+	      (todo "NEXT"
+		    ((org-agenda-prefix-format "  %i %-12:c[%e] ")
+		     (org-agenda-overriding-header "\nNext")))
+	      (todo "TODO"
+			 ((org-agenda-prefix-format "  %i %-12:c%?-12t% s")
+			  (org-agenda-overriding-header "\nTodo")))
+	      (tags "CLOSED>=\"<today>\""
+		    ((org-agenda-prefix-format "  %i %?-12t% s")
+		     (org-agenda-overriding-header "\nDone"))))))))
+  (add-hook 'org-load-hook #'org-init)
+  :config
+  ;; Auto save after refiling
+  (advice-add 'org-refile :after
+        (lambda (&rest _)
+          (org-save-all-org-buffers)))
+  (localleader-keys 'org-mode-map
+		    "r" '("org-mode refile" . org-refile)
+		    "t" '("org-mode tag" . org-set-tags-command)
+		    "e" '("org-mode effort" . org-set-effort)))
 ;;;
 ;;; Evil unicorn
 (use-package evil-org
   :ensure t
-  :hook (org-mode . evil-org-mode)
+  :hook
+  ((org-mode . evil-org-mode)
+   (org-agenda-mode . (lambda()
+			(require 'evil-org-agenda)
+			(evil-org-agenda-set-keys)))))
+;;;
+;;; Block view for org tasks
+(use-package org-timeblock
+  :ensure t
+  :commands org-timeblock
   :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+  ;; Show 7 days by default
+  (setq org-timeblock-span 7)
+  ;; Fixes svg scaling, commented because it is applied globally...
+  ;; (setq image-scaling-factor 1)
+  (general-def 'normal 'org-timeblock-mode-map
+    "j"  #'org-timeblock-forward-block
+    "l"  #'org-timeblock-forward-column
+    "h"  #'org-timeblock-backward-column
+    "k"  #'org-timeblock-backward-block
+    "H"  #'org-timeblock-day-earlier
+    "L"  #'org-timeblock-day-later
+    "gd" #'org-timeblock-jump-to-day
+    "t"  #'org-timeblock-toggle-timeblock-list
+    "v"  #'org-timeblock-switch-scaling)
+  )
 ;;;
 ;;
 ;; |* Latex
