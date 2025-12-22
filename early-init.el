@@ -21,7 +21,8 @@
       tool-bar-mode nil
       scroll-bar-mode nil)
 ;; Adding padding
-(push '(internal-border-width . 40) default-frame-alist)
+;; https://www.gnu.org/software//emacs/manual/html_node/modus-themes/DIY-Use-more-spacious-margins-or-padding-in-Emacs-frames.html
+(push '(internal-border-width . 30) default-frame-alist)
 
 ;; Do not do implicit resizes which cause frame re-renders, especially on some
 ;; windowing systems and also on font changes

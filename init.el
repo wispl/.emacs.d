@@ -26,17 +26,17 @@
 ;;;
 ;;; Init time recording... just for fun. This was taken from
 ;;; https://gist.github.com/rougier/8d5a712aa43e3cc69e7b0e325c84eab4
-(defconst init-start-time (current-time))
+;; (defconst init-start-time (current-time))
 ;; TODO: open dashboard, or maybe agenda.org, or even org-agenda at startup?
-(defun my/init-benchmark ()
-  (let ((init-time (float-time (time-subtract (current-time) init-start-time)))
-	(total-time (string-to-number (emacs-init-time "%f"))))
-    (message (concat
-	      (propertize "Startup time: " 'face 'bold)
-	      (format "%.2fs " init-time)
-	      (propertize (format "(+ %.2fs system time)"
-				  (- total-time init-time)) 'face 'shadow)))))
-(add-hook 'after-init-hook #'my/init-benchmark t)
+;; (defun my/init-benchmark ()
+;;   (let ((init-time (float-time (time-subtract (current-time) init-start-time)))
+;; 	(total-time (string-to-number (emacs-init-time "%f"))))
+;;     (message (concat
+;; 	      (propertize "Startup time: " 'face 'bold)
+;; 	      (format "%.2fs " init-time)
+;; 	      (propertize (format "(+ %.2fs system time)"
+;; 				  (- total-time init-time)) 'face 'shadow)))))
+;; (add-hook 'after-init-hook #'my/init-benchmark t)
 ;;;
 ;;; Use package.el for configuration, I think it is good enough for me right
 ;;; now. In general, I avoid :init and :custom as much as possible unless
@@ -53,13 +53,19 @@
 ;;; For :hook, I avoid the shorthand for consistency so even if :hook (blah)
 ;;; works, I would type out :hook (blah . pack-mode).
 ;;;
+;;;
 ;;; Lazy load by default
 (setq use-package-always-defer t)
 ;;; Package configuration: add MELPA and always defer packages
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
+;;;
 ;;; Nice defaults
 (setq use-file-dialog nil
-      tab-bar-show nil
+      tab-bar-new-button ""
+      tab-bar-close-button-show nil
+      tab-bar-back-button ""
+      tab-bar-auto-width nil
+      tab-bar-separator "    "
       ;; I find these clunky to use, and backups of the files themselves can be
       ;; potentially dangerous to have floating around.
       make-backup-files nil
@@ -74,68 +80,75 @@
 ;; TODO: saveplace-mode and save-hist-mode
 (blink-cursor-mode -1)
 (global-hl-line-mode 1)
+;;
 ;; From Doom, this saves some space when using splits
 (setq window-divider-default-places t
       window-divider-default-bottom-width 1
       window-divider-default-right-width 1)
 (add-hook 'on-init-ui-hook #'window-divider-mode)
-;; Truncate lines instead of wrapping when in prog mode
+;;
+;; Truncate lines instead of wrapping when in prog mode, but wrap
+;; lines in text like formats (like latex and regular text)
 (add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
+(add-hook 'TeX-mode-hook #'visual-line-mode)
+(add-hook 'text-mode-hook #'visual-line-mode)
+;;
 ;; Set encoding
 (set-language-environment "UTF-8")
 (setq default-input-method nil)
-;;; Don't render stuff in inactive windows, distracting...
+;;
+;; Don't render stuff in inactive windows, distracting...
 (setq cursor-in-non-selected-windows nil
       highlight-nonselected-windows nil)
-;;; Scrolling
+;;
+;; Scrolling
 (setq scroll-step 1
       auto-window-vscroll nil
       ;; scroll off
       scroll-margin 7)
-;;; For corfu, note that 'complete removes inserting tabs... a hefty price
-;;; But you can still indent so it is fine: indent with tabs align with spaces
+;; For corfu, note that 'complete removes inserting tabs... a hefty price
+;; But you can still indent so it is fine: indent with tabs align with spaces
 (setq tab-always-indent 'complete
       text-mode-ispell-word-completion nil)
-;;; Recommend by vertico and good defaults too
-;;; 
-;;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
-;;; to switch display modes.
+;;
+;; Recommend by vertico and good defaults too
+;; 
+;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
+;; to switch display modes.
 (setq context-menu-mode t)
 ;; Support opening new minibuffers from inside existing minibuffers.
 (setq enable-recursive-minibuffers t)
-;;; Hide commands in M-x which do not work in the current mode.  Vertico
-;;; commands are hidden in normal buffers. This setting is useful beyond
-;;; Vertico.
+;;
+;; Hide commands in M-x which do not work in the current mode.  Vertico
+;; commands are hidden in normal buffers. This setting is useful beyond
+;; Vertico.
 (setq read-extended-command-predicate #'command-completion-default-include-p)
-;;; Do not allow the cursor in the minibuffer prompt
+;;
+;; Do not allow the cursor in the minibuffer prompt
 (setq minibuffer-prompt-properties
       '(read-only t cursor-intangible t face minibuffer-prompt))
-;;; Properly deletes tabs
+;;
+;; Properly deletes tabs
 (setq backward-delete-char-untabify-method nil)
-;;; Font
+;;
+;; Font
 (add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
-;;; Set header-line with filename in prog-mode
-;;; TODO: revisit this
-;; (add-hook 'prog-mode-hook (lambda()
-;; 			    (setq header-line-format
-;; 				  (concat
-;; 				   (propertize " FILE " 'face 'hl-line)
-;; 				   " %f"
-;; 				   (propertize " " 'display' '(raise +0.20))
-;; 				   (propertize " " 'display' '(raise -0.20))))))
-;;; Move custom stuff elsewhere and don't load them, I prefer
-;;; customizing through code. This cause problems down the road...
+;;
+;; Move custom stuff elsewhere and don't load them, I prefer
+;; customizing through code. This cause problems down the road...
 (setq custom-file "~/.config/emacs/custom.el")
-;;; Performance!!!!!! Most of these were pilfered from Doom.
-;;; Not really needed, disabling saves some time.
+;;
+;; Performance!!!!!! Most of these were pilfered from Doom.
+;; Not really needed, disabling saves some time.
 (setq auto-mode-case-fold nil)
-;;; Don't really use these so setting these should be fine
+;; Don't really use these so setting these should be fine
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)
-;;; Helps with scrolling performance
+;; Helps with scrolling performance
 (setq redisplay-skip-fontification-on-input t)
-;;; I actually have no idea how to work this
+;;
+;; I actually have no idea how to work this
 (setq display-buffer-alist
       '(
 	;; Make warnings, logs, and erros open on the bottom
@@ -146,10 +159,10 @@
 	 (direction . below)
 	 (slot . -1)
 	 (window-parameters . ((split-window . #'ignore))))
-	;; TODO: make this less granular
 	;; Preview pdfs in the sidebar
-	("\\.pdf\\'"
-	 (display-buffer-in-side-window)
+	;; ("\\.pdf\\'"
+	((major-mode . pdf-view-mode)
+	 (display-buffer-reuse-mode-window display-buffer-in-side-window)
 	 (window-width . 0.45)
 	 (side . right)
 	 (slot . 1))))
@@ -187,14 +200,15 @@
 ;;; TODO: Use custom-face? not sure what are the advantages
 (use-package kanagawa-themes
   :ensure t
+  :demand t
   :hook
   (diff-hl-mode . (lambda()
 		    ;; Set these ourselves since they are not really defined in kanagawa-dragon
-		    ;; TODO: upstream?
+		    ;; TODO: upstream? (diff-hl)
 		    (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
 		    (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
 		    (set-face-attribute 'diff-hl-delete nil :foreground "#e46876" :background "unspecified")))
-  :init
+  :config
   (setq kanagawa-themes-comment-italic t)
   (load-theme 'kanagawa-dragon t)
   (set-face-background 'mode-line-active "#1d1c19")
@@ -242,6 +256,37 @@
   (general-def 'normal
     "]d" '("next diagnostic" . flymake-goto-next-error)
     "[d" '("previous diagnostic" . flymake-goto-prev-error)))
+;;;
+;;; Recent files for recent stuff
+(use-package recentf
+  :ensure nil
+  :hook (on-first-file-hook . recentf-mode)
+  :commands recentf-open-files
+  :config
+  (setq recentf-auto-cleanup nil
+	recentf-max-saved-items 50)
+  ;; From doom, don't add string properties (no purpose for them)
+  (add-to-list 'recentf-filename-handlers #'substring-no-properties)
+  ;; From doom, clean recentf at exit unless it is a daemon 
+  (setq recentf-auto-cleanup (if (daemonp) 300))
+  (add-hook 'kill-emacs-hook #'recentf-cleanup))
+;;
+;; Nicer tabs
+(use-package tab-bar
+  :ensure nil
+  :commands tab-new
+  :config
+  ;; Better colors and no ugly boxes
+  (set-face-attribute 'tab-bar nil :background "unspecified" :inherit 'default)
+  (set-face-attribute 'tab-bar-tab-inactive nil :background "unspecified" :inherit 'font-lock-comment-face)
+  (set-face-attribute 'tab-bar-tab nil :background "unspecified" :inherit 'default :box nil)
+  ;; Top padding, clean up buttons, add icon, and sleeker tabs
+  (defun tab-bar-top-pad () (propertize " " 'display' (raise +0.45)))
+  (defun tab-bar-icon () (propertize "󰧭" 'face '(:inherit 'default :height 300) 'display' (raise -0.10)))
+
+  (setq tab-bar-format (butlast tab-bar-format))
+  (add-to-list 'tab-bar-format 'tab-bar-icon)
+  (add-to-list 'tab-bar-format 'tab-bar-top-pad t))
 ;;;
 ;;; Window rules
 ;;;
@@ -295,14 +340,14 @@
   (defun smarttab ()
     (interactive)
     (cond ((bound-and-true-p tempel--active) (tempel-next 1))
-	  ((org-at-table-p) (org-table-next-field))
+	  ((and (fboundp #'org-at-table-p) (org-at-table-p)) (org-table-next-field))
 	  (t (if (not (tempel-expand))
 		 (indent-for-tab-command)))))
   ;; If in a snippet, jump back, otherwise 
   (defun smartshifttab ()
     (interactive)
     (cond ((bound-and-true-p tempel--active) (tempel-previous 1))
-	  ((org-at-table-p) (org-table-previous-field))
+	  ((and (fboundp #'org-at-table-p) (org-at-table-p)) (org-table-previous-field))
 	   (t ())))
   ;; Extra insert mode bindings
   (general-def 'insert
@@ -313,6 +358,9 @@
     ;; Overloaded tabbing
     "<tab>"     #'smarttab
     "<backtab>" #'smartshifttab)
+    ;; Continue comments
+  (general-def 'global-map
+    "RET"       #'default-indent-new-line)
   ;; Extra normal mode bindings
   (general-def 'normal
     "]t" #'tab-next
@@ -356,6 +404,8 @@
     "<tab>" '("find tabs" . tab-bar-select-tab-by-name)
     "SPC"   '("alt buffer" . evil-switch-to-windows-last-buffer)
     "f"     '("files" . find-file)
+    "xb"     '("kill buffer" . kill-current-buffer)
+    "xt"     '("kill tab" . tab-close)
     "pa"    '("project alternate" . ff-find-other-file)
     "hm"    '("help mode" . describe-mode)
     "hv"    '("help variable" . describe-variable)
@@ -398,6 +448,36 @@
 (use-package evil-visualstar
   :ensure t
   :hook (on-first-input . global-evil-visualstar-mode))
+;;;
+;;; Indentation text objects
+(use-package evil-indent-plus
+  :ensure t
+  :hook (on-first-input . evil-indent-plus-default-bindings))
+;;;
+;;; Block textobjs and seeking
+(use-package evil-textobj-anyblock
+  :ensure t
+  :after evil
+  :general
+  (:keymaps 'inner "b" #'evil-textobj-anyblock-inner-block)
+  (:keymaps 'outer "b" #'evil-textobj-anyblock-a-block)
+  :init
+  (setq evil-textobj-anyblock-blocks
+        '(("(" . ")")
+          ("{" . "}")
+          ("\\[" . "\\]")
+          ("<" . ">")
+	  ("'" . "'")
+	  ("\"" . "\"")
+	  ("`" . "`")
+	  ("“" . "”"))))
+;;;
+;;; 
+;;;
+;;; Matchit
+(use-package evil-matchit
+  :ensure t
+  :hook (on-first-input . global-evil-matchit-mode))
 ;;;
 ;;; Modeline for evil
 (use-package doom-modeline
@@ -446,7 +526,11 @@
   :hook (on-first-input . vertico-mode)
   :config
   (setq vertico-count 15
-	vertico-resize nil))
+	vertico-resize nil)
+  (general-def 'vertico-map
+    "C-SPC" #'+vertico/embark-preview
+    "C-M-n" #'vertico-next-group
+    "C-M-p" #'vertico-previous-group))
 ;;;
 ;;; Provides annotation (tid bits of information) on the sides for vertico
 (use-package marginalia
@@ -507,6 +591,21 @@
 			 (add-to-list 'completion-at-point-functions #'cape-dabbrev)
 			 (add-to-list 'completion-at-point-functions #'cape-file))))
 ;;;
+;;; Jumping around with avy
+;;; TODO: check out if `avy-goto-char-timer` is better, it is more flexible
+(use-package avy
+  :ensure t
+  :after evil
+  :general
+  (leader-keys "s" '("search (avy)" . avy-goto-char-2)))
+;;;
+;;; Slick search and replace
+(use-package wgrep
+  :ensure t
+  :commands wgrep-change-to-wgrep-mode
+  :config
+  (setq wgrep-auto-save-buffer t))
+;;;
 ;;
 ;; |* Dev
 ;;
@@ -549,7 +648,6 @@
     ;; We use periodic '(top t) to repeat the bits instead of doing it manually
     (define-fringe-bitmap 'diff-hl-pretty-line bitmap 1 width '(top t)))
   ;; Creates a small triangle pointing to the right, used for deleted lines
-  ;; TODO: better way?
   (let* ((width 8)
 	 (bitmap (vector
 		 #b11000000
@@ -702,21 +800,21 @@
 	     (c++-mode . c++-ts-mode)
 	     (c-or-c++-mode . c-or-c++-ts-mode)))
     (add-to-list 'major-mode-remap-alist mapping)))
-;;
-;; For when I need markdown
+;;;
+;;; For when I need markdown
 (use-package markdown-mode
   :mode "\\.md\\'"
   :ensure t)
-;;
-;; Use rust-mode with treesitter integration 
-;; TODO: restic-mode ?
+;;;
+;;; Use rust-mode with treesitter integration 
+;;; TODO: restic-mode ?
 (use-package rust-mode
   :ensure t
   :mode "\\.rs\\'"
   :config
   (setq rust-mode-treesitter-derive t))
-;;
-;; TODO: Move to nix-ts-mode evenutally
+;;;
+;;; TODO: Move to nix-ts-mode evenutally
 (use-package nix-mode
   :ensure t
   :mode "\\.nix\\'")
@@ -762,13 +860,13 @@
     ;; them later, usually at the end of the day
     (setq org-capture-templates
 	  `(("t" "todo" entry (file "inbox.org")
-	     "* TODO %?\n%U\n%a\n")
+	     "* TODO %?\n%U")
 	    ("q" "quick" entry (file "inbox.org")
-	     "* NEXT %?\n%U\n%a\n")
+	     "* NEXT %?\n%U")
 	    ("n" "note" entry (file "inbox.org")
-	     "* %? :note:\n%U\n%a\n")
+	     "* %? :note:\n%U\n%a")
 	    ("m" "meeting" entry (file+headline "agenda.org" "Future")
-	     "* %?\n<%<%Y-%m-%d %a %H:00>>\n%a\n")))
+	     "* %?\n<%<%Y-%m-%d %H:00>>")))
     ;; Refiling
     (setq org-refile-targets '(("todo.org" :maxlevel . 1)))
     (setq org-refile-use-outline-path 'file)
@@ -835,8 +933,7 @@
     "L"  #'org-timeblock-day-later
     "gd" #'org-timeblock-jump-to-day
     "t"  #'org-timeblock-toggle-timeblock-list
-    "v"  #'org-timeblock-switch-scaling)
-  )
+    "v"  #'org-timeblock-switch-scaling))
 ;;;
 ;;
 ;; |* Latex
@@ -925,6 +1022,24 @@
 	(nconc '(("itemize" LaTeX-indent-item)
 		 ("enumerate" LaTeX-indent-item)
 	       LaTeX-indent-environment-list)))
+  ;; From https://karthinks.com/software/latex-input-for-impatient-scholars/
+  (defun latex-math-from-calc ()
+    "Evaluate `calc' on the contents of line at point."
+    (interactive)
+    (cond ((region-active-p)
+	   (let* ((beg (region-beginning))
+		  (end (region-end))
+		  (string (buffer-substring-no-properties beg end)))
+	     (kill-region beg end)
+	     (insert (calc-eval `(,string calc-language latex
+					  calc-prefer-frac t
+					  calc-angle-mode rad)))))
+	  (t (let ((l (thing-at-point 'line)))
+	       (end-of-line 1) (kill-line 0)
+	       (insert (calc-eval `(,l
+				    calc-language latex
+				    calc-prefer-frac t
+				    calc-angle-mode rad)))))))
   ;; Compile using latexmk
   (defun compile-latex ()
     (interactive)
@@ -940,6 +1055,7 @@
 	     (symbol-at-point))
      nil))
   (localleader-keys 'LaTeX-mode-map
+    "e" '("latex evaluate" . latex-math-from-calc)
     "p" '("latex preview" . preview-at-point)
     "P" '("latex unPreview" . preview-clearout-at-point)
     "f" '("latex figures" . inkfig)
@@ -1008,6 +1124,7 @@
     (insert "|"))
   ;; Condition for expanding snippets at the start of the line. This is useful
   ;; for what I consider "block" elements like align, figures, and tables.
+  ;; Caveat is that if you type genali, it will still expand.
   (defun my/line-start ()
     (let ((symbol-bounds (bounds-of-thing-at-point 'symbol))
 	  (line-start (line-beginning-position)))
@@ -1023,12 +1140,13 @@
   ;; General snippets which should expand only on the beginning of the line
   (aas-set-snippets 'laas-mode
     :cond 'my/line-start
-    "dm" '(tempel "\\[" n> q n "\\]" >)
+    "dm"   '(tempel "\\[" n> q n "\\]" >)
     "beg"  '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
+    "fig"  '(tempel "\\begin{figure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
     "enum" '(tempel "\\begin{enumerate}" n> "\\item " q > n "\\end{enumerate}" >)
     "item" '(tempel "\\begin{itemize}" n> "\\item " q > n "\\end{itemize}" >)
     "tabl" '(tempel "\\begin{table}[h]" n> "\\centering" n> q n "\\end{table}" > :post (my/latex-orgtb))
-    "ali" '(tempel "\\begin{align}" n> q n "\\end{align}" >))
+    "ali"  '(tempel "\\begin{align}" n> q n "\\end{align}" >))
   ;; Reset these snippets, we will override them later
   (aas-set-snippets 'laas-mode
     "RR" nil
@@ -1040,7 +1158,7 @@
     ;; Important snippets
     "dint" '(tempel "\\int" "_{" (p "0") "}^{" (p "x") "} " (p "f(x)")  "\\, " (p "dx"))
     "sum"  '(tempel "\\sum" "_{" (p "k = 0") "}^{" (p "\\infty") "} " q)
-    "lim"  '(tempel "\\lim" "_{" (p "k = 0") "}^{" (p "\\infty") "} " q)
+    "lim"  '(tempel "\\lim" "_{" (p "n \to \infty") "} " q)
     "part" '(tempel "\\frac{\\partial " (p "x") "}{\\partial " (p "y") "}")
     "mcal" '(tempel "\\mathcal{" p "}" q)
     "tt"   '(tempel "\\text{" p "}" q)
@@ -1048,7 +1166,7 @@
     ;; Matrices and vectors
     "cvec" '(tempel "\\begin{pmatrix} " (p "x") " \\\\ \\vdots \\\\ " (p "x_{n}") " \\end{pmatrix}" q)
     "pmat" '(tempel "\\begin{pmatrix}" n> q n "\\end{pmatrix}" >)
-    "mat" '(tempel (p (read-number "Rows: ") rows noinsert)
+    "mat"  '(tempel (p (read-number "Rows: ") rows noinsert)
 		   (p (read-number "Cols: ") cols noinsert)
 		   "\\begin{" (p "pmatrix" type) "}" n
 		   >
@@ -1068,8 +1186,8 @@
     "<-"  "\\leftarrow"
     "cc"  "\\subset"
     "c="  "\\subseteq"
-    "nn" "\\cap"
-    "uu" "\\cup"
+    "nn"  "\\cap"
+    "uu"  "\\cup"
     ;; Symbols
     "oo"   "\\infty"
     "pi"   "\\pi"
@@ -1081,8 +1199,8 @@
     "PP"   "\\P"
     ;; Delimiters
     "lrp" '(tempel "\\left( " p " \\right)" q)
-    "lrb" '(tempel "\\left{ " p " \\right}" q)
-    "lra" '(tempel "\\left\\langle " p " \\right\\rangle}" q)
+    "lrb" '(tempel "\\left\\{ " p " \\right\\}" q)
+    "lra" '(tempel "\\left\\langle " p " \\right\\rangle" q)
     "lrl" '(tempel "\\left| " p " \\right|" q)))
 ;;;
 ;;; Evil extensions for tex editing! Like the venerable vimtex
@@ -1090,6 +1208,7 @@
 ;;; which is probably better since t is used much more than m.
 (use-package evil-tex
   :ensure t
+  :after evil
   :hook (LaTeX-mode . evil-tex-mode))
 ;;;
 ;;
@@ -1099,19 +1218,20 @@
 ;;;
 ;;; Jinx, much faster alternative to flyspell which spells the end for my
 ;;; buffers...
-;;; TODO: Commented out until I find some aspell files
-;; (use-package jinx
-;;   :ensure t
-;;   ;; Only enable in text modes
-;;   :hook (text-mode-hook . jinx-mode)
-;;   :config
-;;   (general-def 'insert 'override
-;;     "C-l" #'jinx-correct))
+(use-package jinx
+  :ensure t
+  :hook ((text-mode  . jinx-mode)
+	 (latex-mode . jinx-mode))
+  :config
+  (general-def 'insert "C-l" #'jinx-correct)
+  (general-def 'normal
+    "]s" #'jinx-next
+    "[s" #'jinx-previous))
 ;;
 ;; Direnv integration for emacs
-(use-package direnv
+(use-package envrc
   :ensure t
-  :hook (on-first-file . direnv-mode))
+  :hook (on-first-file . envrc-global-mode))
 ;;;
 ;;; Calendar in emacs
 (use-package calfw
@@ -1159,4 +1279,18 @@
   :ensure t
   :hook (sh-mode . flymake-shellcheck-load)
   :commands flymake-shellcheck-load)
+;;;
+;;; Dashboard, why not
+(use-package dashboard
+  :ensure t
+  :demand t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-startup-banner 3)
+  (setq dashboard-items '((recents . 5)))
+  (setq dashboard-banner-logo-title "D E S P A I R")
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+  (setq dashboard-show-shortcuts nil)
+  (setq dashboard-set-footer nil))
 ;;; End of the init file
