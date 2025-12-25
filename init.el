@@ -592,6 +592,11 @@
 	corfu-preselect-first t
 	completion-cycle-threshold nil))
 ;;;
+;;; Fun icons for corfu
+(use-package nerd-icons-corfu
+  :ensure t
+  :hook (global-corfu-mode . (lambda () (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))))
+;;;
 ;;; Completion extensions for corfu
 (use-package cape
   :ensure t
