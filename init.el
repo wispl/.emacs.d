@@ -204,13 +204,13 @@
   :hook
   (diff-hl-mode . (lambda()
 		    ;; Set these ourselves since they are not really defined in kanagawa-dragon
-		    ;; TODO: upstream? (diff-hl)
 		    (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
 		    (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
 		    (set-face-attribute 'diff-hl-delete nil :foreground "#e46876" :background "unspecified")))
   :config
   (setq kanagawa-themes-comment-italic t)
   (load-theme 'kanagawa-dragon t)
+  (set-face-background 'header-line "#1d1c19")
   (set-face-background 'mode-line-active "#1d1c19")
   (set-face-background 'mode-line-inactive "#1d1c19"))
 ;;;
