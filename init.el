@@ -1107,14 +1107,12 @@
     (TeX-save-document (TeX-master-file))
     (TeX-command "LaTeXMk" 'TeX-master-file -1))
   ;; Run my inkfig script using the symbol at point as the name  
-  ;; Silence errors and output since inkscape produces quite a few by default
+  ;; Use start process to avoid creating a buffer
   (defun inkfig ()
     (interactive)
-    (async-shell-command
-     (format "inkfig \"%s/figures/%s.svg\""
-	     (buffer-local-value 'default-directory (current-buffer))
-	     (symbol-at-point))
-     nil))
+    (start-process "inkfig " nil "inkfig" (format "%s/figures/%s.svg"
+						  (buffer-local-value 'default-directory (current-buffer))
+						  (symbol-at-point))))
   (localleader-keys 'LaTeX-mode-map
     "e" '("latex evaluate" . latex-math-from-calc)
     "p" '("latex preview" . preview-at-point)
