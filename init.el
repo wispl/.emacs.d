@@ -223,6 +223,15 @@
 (use-package which-key
   :ensure nil
   :hook (on-first-input . which-key-mode))
+;;
+;; Little quality of life for dired
+(use-package dired
+  :ensure nil
+  :commands dired-jump
+  :init
+  (setq dired-dwim-target t)
+  :config
+  (setq dired-listing-switches "-Ahl -v --group-directories-first"))
 ;;;
 ;;; project, also no introduction needed
 (use-package project
@@ -676,22 +685,69 @@
 	;; updating diffs while staging and unstaging hunks
 	diff-hl-show-staged-changes nil))
 ;;;
-;;; A sidebar tree. I use this only occasionally so please don't hurt me...
-(use-package dired-sidebar
+;;; Superbuffed dired
+(use-package dirvish
   :ensure t
-  :hook (dired-sidebar-mode . (lambda() (doom-modeline-set-modeline 'sidebar nil)))
   :general
-  (leader-keys "os" '("open sidebar" . dired-sidebar-toggle-sidebar))
+  (leader-keys "os" '("open sidebar" . dirvish-side))
+  (leader-keys "of" '("open file manager" . dirvish))
+  :general-config
+  ;; Keybinds, most are from Doom
+  (general-def 'normal 'dirvish-mode-map
+    "?"   #'dirvish-dispatch
+    "h"   #'dired-up-directory
+    "l"   #'dired-find-file
+    "<tab>" #'dirvish-subtree-toggle
+    "<backtab>" #'dirvish-subtree-up
+    "S"   #'dirvish-quicksort
+    "F"   #'dirvish-layout-toggle
+    "z"   #'dirvish-history-jump
+    "p"   #'dirvish-yank)
+  (general-def 'normal 'dirvish-mode-map :prefix "y"
+    "l"   #'dirvish-copy-file-true-path
+    "n"   #'dirvish-copy-file-name
+    "p"   #'dirvish-copy-file-path
+    "r"   #'dirvish-copy-remote-path
+    "y"   #'dired-do-copy)
   :config
-  (setq dired-sidebar-width 25
-	dired-sidebar-use-custom-modeline nil
-	dired-sidebar-theme 'ascii))
+  (dirvish-override-dired-mode)
+  (setq dirvish-reuse-session 'open)
+  (setq dirvish-subtree-always-show-state t)
+  (setq dirvish-side-width 27)
+
+  ;; kanagawa (upstream ?) 
+  (set-face-attribute 'dirvish-inactive nil :inherit 'mode-line-inactive)
+  (set-face-attribute 'dirvish-hl-line nil :inherit 'hl-line)
+  (set-face-attribute 'dirvish-hl-line-inactive nil :inherit 'hl-line)
+
+  (defface dirvish-file-size '((t :inherit 'font-lock-comment-face)) "Dirvish")
+  (defface dirvish-subtree-guide '((t :inherit 'font-lock-comment-face)) "Dirvish")
+  (defface dirvish-subtree-state '((t :inherit 'font-lock-comment-face)) "Dirvish")
+
+  ;; prettier
+  (setq dirvish-nerd-icons-height 0.8
+        dirvish-subtree-prefix "  ")
+  (setq dirvish-hide-details '(dirvish dirvish-side)
+	dirvish-hide-cursor '(dirvish dirvish-side))
+  (setq dirvish-subtree-state-style 'nerd)
+  (setq dirvish-attributes '(file-size nerd-icons subtree-state vc-state)
+	dirvish-mode-line-format
+	'(:left (sort file-time symlink) :right (omit yank index)))
+  ;; Not sure why by -11 gives perfect height
+  (when-let (height (- (bound-and-true-p doom-modeline-height) 11))
+    (setq dirvish-mode-line-height height)
+    (setq dirvish-header-line-height height))
+
+  ;; Allow focusing the side normally
+  (setq dirvish-side-window-parameters
+	'((no-other-window . nil)
+	  (no-delete-other-windows . t))))
 ;;;
-;;; Extension for dired to allow folding and unfolding
-;;; TODO: I think dired-sidebar pull this as a dependency, might remove?
-(use-package dired-subtree
+;;; Colorful dired
+(use-package diredfl
   :ensure t
-  :commands (dired-sidebar-toggle-sidebar))
+  :hook (dired-mode . diredfl-mode)
+  :hook (dirvish-directory-view-mode . diredfl-mode))
 ;;;
 ;;; Delicious terminal emulation
 (use-package eat
