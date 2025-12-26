@@ -976,26 +976,6 @@
 			(require 'evil-org-agenda)
 			(evil-org-agenda-set-keys)))))
 ;;;
-;;; Block view for org tasks
-(use-package org-timeblock
-  :ensure t
-  :commands org-timeblock
-  :config
-  ;; Show 7 days by default
-  (setq org-timeblock-span 7)
-  ;; Fixes svg scaling, commented because it is applied globally...
-  ;; (setq image-scaling-factor 1)
-  (general-def 'normal 'org-timeblock-mode-map
-    "j"  #'org-timeblock-forward-block
-    "l"  #'org-timeblock-forward-column
-    "h"  #'org-timeblock-backward-column
-    "k"  #'org-timeblock-backward-block
-    "H"  #'org-timeblock-day-earlier
-    "L"  #'org-timeblock-day-later
-    "gd" #'org-timeblock-jump-to-day
-    "t"  #'org-timeblock-toggle-timeblock-list
-    "v"  #'org-timeblock-switch-scaling))
-;;;
 ;;
 ;; |* Latex
 ;;
@@ -1128,8 +1108,13 @@
   :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-tools-install)
-  ;; Fixes flickering of cursor due to evil
-  (add-hook 'pdf-view-mode-hook evil-normal-state-cursor (list nil)))
+  ;; Follow theme
+  (add-hook 'pdf-view-mode-hook 'pdf-view-themed-minor-mode)
+  ;; Fixes flickering of cursor due to evil, and also gets rid of the 
+  ;; pesky one pixel border frame on the pdf view as well
+  (add-hook 'pdf-view-mode-hook
+	    (lambda ()
+	      (set (make-local-variable 'evil-normal-state-cursor) (list nil)))))
 ;;;
 ;;; Automagically compile tex files. Enable via `auctex-cont-latexmk-mode'
 (use-package auctex-cont-latexmk
