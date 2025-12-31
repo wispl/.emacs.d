@@ -1280,38 +1280,61 @@
 ;;; Calendar in emacs
 (use-package calfw
   :ensure t
-  :commands cfw:open-calendar-buffer
+  :commands calfw-open-calendar-buffer
   :config
-  ;; Better frame for calendar
-  (setq cfw:face-item-separator-color nil
-	cfw:render-line-breaker 'cfw:render-line-breaker-none
-	cfw:fchar-junction ?╋
-	cfw:fchar-vertical-line ?┃
-	cfw:fchar-horizontal-line ?━
-	cfw:fchar-left-junction ?┣
-	cfw:fchar-right-junction ?┫
-	cfw:fchar-top-junction ?┯
-	cfw:fchar-top-left-corner ?┏
-	cfw:fchar-top-right-corner ?┓)
-  ;; Vim keybindings, subset taken from Doom
-  (general-def 'cfw:calendar-mode-map
-    "h"   #'cfw:navi-previous-day-command
-    "j"   #'cfw:navi-next-week-command
-    "k"   #'cfw:navi-previous-week-command
-    "l"   #'cfw:navi-next-day-command
-    "RET" #'cfw:show-details-command
-    "D"   #'cfw:change-view-day
-    "M"   #'cfw:change-view-month
-    "T"   #'cfw:change-view-two-weeks
-    "W"   #'cfw:change-view-week)
-  (general-def 'cfw:details-mode-map
-    "q"   #'cfw:details-kill-buffer-command))
+  ;; TODO: Kind of finicky need better solution
+  (evil-set-initial-state 'calfw-calendar-mode 'insert)
+  (evil-set-initial-state 'calfw-details-mode 'insert)
+  ;; Better, less jarring colors (temporary for now, copied from repo)
+  (set-face-attribute 'calfw-title-face nil :foreground "#f0dfaf" :weight 'bold :height 2.0 :inherit 'variable-pitch)
+  (set-face-attribute 'calfw-header-face nil :foreground "#d0bf8f" :weight 'bold)
+  (set-face-attribute 'calfw-sunday-face nil :foreground "#cc9393" :background "grey10" :weight 'bold)
+  (set-face-attribute 'calfw-saturday-face nil :foreground "#8cd0d3" :background "grey10" :weight 'bold)
+  (set-face-attribute 'calfw-holiday-face nil :background "grey10" :foreground "#8c5353" :weight 'bold)
+  (set-face-attribute 'calfw-grid-face nil :foreground "DarkGrey")
+  (set-face-attribute 'calfw-default-content-face nil :foreground "#bfebbf")
+  (set-face-attribute 'calfw-periods-face nil :foreground "cyan")
+  (set-face-attribute 'calfw-day-title-face nil :background "grey10")
+  (set-face-attribute 'calfw-default-day-face nil :weight 'bold :inherit 'calfw-face-day-title)
+  (set-face-attribute 'calfw-annotation-face nil :foreground "RosyBrown" :inherit 'calfw-face-day-title)
+  (set-face-attribute 'calfw-disable-face nil :foreground "DarkGray" :inherit 'calfw-face-day-title)
+  (set-face-attribute 'calfw-today-title-face nil :background "#7f9f7f" :weight 'bold)
+  (set-face-attribute 'calfw-today-face nil :background "grey10" :weight 'bold)
+  (set-face-attribute 'calfw-toolbar-face nil :foreground "Steelblue4" :background "Steelblue4")
+  (set-face-attribute 'calfw-toolbar-button-off-face nil :foreground "Gray10" :weight 'bold)
+  (set-face-attribute 'calfw-toolbar-button-on-face nil :foreground "Gray50" :weight 'bold)
+
+  (general-def 'calfw-calendar-mode-map
+    "h"   #'calfw-navi-previous-day-command
+    "j"   #'calfw-navi-next-week-command
+    "k"   #'calfw-navi-previous-week-command
+    "l"   #'calfw-navi-next-day-command
+    "RET" #'calfw-show-details-command
+    "D"   #'calfw-change-view-day
+    "M"   #'calfw-change-view-month
+    "T"   #'calfw-change-view-two-weeks
+    "W"   #'calfw-change-view-week)
+  (general-def 'calfw-details-mode-map
+    "q"   #'calfw-details-kill-buffer-command))
+;;;
+;;; org integration for calfw
+(use-package calfw-org
+  :ensure t
+  :commands (calfw-org-open-calendar
+             calfw-org-create-source
+             calfw-org-create-file-source
+             calfw-open-org-calendar-withkevin))
 ;;;
 ;;; Integrates org mode events with calfw
 (use-package calfw-org
   :ensure t
   :after calfw
   :commands cfw:open-org-calendar)
+;;;
+;;; calfw time blocks
+;; (use-package calfw-blocks
+;;   :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest)
+;;   :ensure t)
 ;;;
 ;;; Formatter
 ;;; TODO: decide whether to enable globally
