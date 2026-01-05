@@ -1133,7 +1133,8 @@
   :ensure t
   :hook
   ((LaTeX-mode . laas-mode)
-   (org-mode . laas-mode))
+   (org-mode . laas-mode)
+   (markdown-mode . laas-mode))
   :config
   ;; Do not add space after auto expanding snippets, main use case is so I can
   ;; directly wrap the expanded term into a fraction if I wanted to without
@@ -1166,6 +1167,17 @@
     (advice-add 'orgtbl-ctrl-c-ctrl-c :after #'my/orgtbl-replace)
     (orgtbl-mode 1)
     (insert "|"))
+  ;; From https://github.com/tecosaur/LaTeX-auto-activating-snippets/issues/25
+  ;; Allows using laas in markdown math environments as well
+  (defun laas-mathp ()
+    "Determine whether point is within a LaTeX maths block."
+    (cond
+     ((derived-mode-p 'latex-mode) (texmathp))
+     ((derived-mode-p 'markdown-mode) (texmathp))
+     ((derived-mode-p 'org-mode) (laas-org-mathp))
+     (t (message "LaTeX-auto-activated snippets does not currently support math in any of %s"
+		 (aas--modes-to-activate major-mode))
+	nil)))
   ;; Condition for expanding snippets at the start of the line. This is useful
   ;; for what I consider "block" elements like align, figures, and tables.
   ;; Caveat is that if you type genali, it will still expand.
@@ -1198,7 +1210,7 @@
     "PP" nil)
   ;; Snippets which should expand in math mode only
   (aas-set-snippets 'laas-mode
-    :cond 'texmathp 
+    :cond #'texmathp 
     ;; Important snippets
     "dint" '(tempel "\\int" "_{" (p "0") "}^{" (p "x") "} " (p "f(x)")  "\\, " (p "dx"))
     "sum"  '(tempel "\\sum" "_{" (p "k = 0") "}^{" (p "\\infty") "} " q)
