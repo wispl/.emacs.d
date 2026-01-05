@@ -1360,4 +1360,32 @@
   (setq dashboard-vertically-center-content t)
   (setq dashboard-show-shortcuts nil)
   (setq dashboard-set-footer nil))
+;;;
+;;; Reading feeds in emacs, feeding reads in emacs
+(use-package elfeed
+  :ensure t
+  :commands elfeed
+  :init
+  (setq elfeed-db-directory (file-name-concat user-emacs-directory "data" "elfeed" "db/")
+	elfeed-enclosure-default-dir (file-name-concat user-emacs-directory "data" "elfeed" "enclosures/"))
+  :config
+  (make-directory elfeed-db-directory t)
+  (setq url-queue-time 30)
+  (setq elfeed-feeds
+	'(("https://www.reddit.com/r/emacs.rss" emacs reddit)
+	  ("https://www.reddit.com/r/NixOS.rss" nixos reddit)
+	  ("https://www.reddit.com/r/linux.rss" linux reddit)
+	  ("https://www.phoronix.com/rss.php" linux)
+	  ("https://sachachua.com/blog/feed/" emacs)
+	  ("https://karl-voit.at/tags/software/" emacs)
+	  ("https://www.redblobgames.com/blog/posts.xml"  game-programming)
+	  ("https://fabiensanglard.net/rss.xml" game-programming)
+	  ("https://ferd.ca/feed.rss" distributed-systems)
+	  ("https://pythonspeed.com/atom.xml" python)
+	  ("https://www.b-list.org/feeds/entries/" python)
+	  ;; Personal favorite is writing python like it is rust
+	  ("https://kobzol.github.io/feed.xml" rust python)
+	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
+	  ("https://nullprogram.com/feed/" c)
+	  ("https://mcyoung.xyz/feed.xml" optimization))))
 ;;; End of the init file
