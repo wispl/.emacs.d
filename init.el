@@ -831,7 +831,7 @@
   (setq treesit-font-lock-level 4
 	treesit-language-source-alist
 	'((c "https://github.com/tree-sitter/tree-sitter-c.git")
-	  (c++ "https://github.com/tree-sitter/tree-sitter-cpp.git")
+	  (cpp "https://github.com/tree-sitter/tree-sitter-cpp.git")
 	  (javascript "https://github.com/tree-sitter/tree-sitter-javascript.git")
 	  (json "https://github.com/tree-sitter/tree-sitter-json.git")
 	  (css "https://github.com/tree-sitter/tree-sitter-css.git")
@@ -862,6 +862,23 @@
 	     (c++-mode . c++-ts-mode)
 	     (c-or-c++-mode . c-or-c++-ts-mode)))
     (add-to-list 'major-mode-remap-alist mapping)))
+;;
+;; I hate C
+(use-package c-ts-mode
+  :ensure nil
+  :general-config
+  (localleader-keys 'c-ts-mode-map
+    "o" '("other file" . find-sibling-file))
+  :config
+  (add-to-list 'find-sibling-rules '("/\\([^/]+\\)\\.c\\(c\\|pp\\)?\\'" "\\1.h\\(h\\|pp\\)?\\'"))
+  (add-to-list 'find-sibling-rules '("/\\([^/]+\\)\\.h\\(h\\|pp\\)?\\'" "\\1.c\\(c\\|pp\\)?\\'"))
+  (setq c-default-style "linux"
+        c-ts-mode-indent-style 'linux
+	c-ts-mode-indent-offset 8)
+  ;; HACK: for some reason ts indent is broken in c, apparantly fixed in emacs 31
+  ;; this breaks indentation style a little, but it should suffice for now
+  (general-def 'insert 'c-ts-mode-map
+    "RET" 'evil-ret-and-indent))
 ;;;
 ;;; For when I need markdown
 (use-package markdown-mode
@@ -887,6 +904,12 @@
 (use-package nix-mode
   :ensure t
   :mode "\\.nix\\'")
+;;;
+;;; Rare times where I have to work with jupyter notebooks
+;;; https://github.com/astoff/code-cells.el
+(use-package code-cells
+  :ensure t
+  :mode "\\.ipynb\\'")
 ;;;
 ;;
 ;; |* Org
@@ -1318,7 +1341,7 @@
     "PP" nil)
   ;; Snippets which should expand in math mode only
   (aas-set-snippets 'laas-mode
-    :cond #'texmathp 
+    :cond 'texmathp 
     ;; Important snippets
     "dint" '(tempel "\\int" "_{" (p "0") "}^{" (p "x") "} " (p "f(x)")  "\\, " (p "dx"))
     "sum"  '(tempel "\\sum" "_{" (p "k = 0") "}^{" (p "\\infty") "} " q)
