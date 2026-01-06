@@ -60,6 +60,7 @@
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
 ;;;
 ;;; Nice defaults
+(setq-default fill-column 80)
 (setq use-file-dialog nil
       tab-bar-new-button ""
       tab-bar-close-button-show nil
@@ -70,8 +71,6 @@
       ;; potentially dangerous to have floating around.
       make-backup-files nil
       create-lockfiles nil
-      ;; 80 is much better than what it was before...
-      fill-column 80
       ;; No need to have duplicates...
       kill-do-not-save-duplicates t
       ;; Vertical splits over horizontal ones
