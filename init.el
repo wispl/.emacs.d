@@ -967,6 +967,107 @@
 		    "t" '("org-mode tag" . org-set-tags-command)
 		    "e" '("org-mode effort" . org-set-effort)))
 ;;;
+;;; org-roam, progenitor of all madness
+(use-package org-roam
+  :ensure t
+  :general
+  (leader-keys "nm" '("notes mind" . org-roam-node-find))
+  :general-config
+  (localleader-keys 'org-mode-map
+    "f" #'org-roam-node-find
+    "F" #'org-roam-ref-find
+    "i" #'org-roam-node-insert
+    "I" #'org-id-get-create
+    "t" #'org-roam-buffer-toggle
+    "r" #'org-roam-refile)
+  :config
+  ;; From https://jmthornton.net/blog/p/org-roam-created-modified-dates
+  ;; Adds created and modified to properties automatically. Using this instead of org-roam-timestamps
+  ;; because that one does it for all nodes which is too much for me, I just need it for files
+  (defun org-roam-extract-timestamp-from-filepath (filepath)
+    "Extract timestamp from the Org-roam FILEPATH assuming it follows the default naming scheme."
+    (let ((filename (file-name-nondirectory filepath)))
+      (when (string-match "\\([0-9]\\{12\\}\\)" filename) (match-string 1 filename))))
+
+  (defun org-roam-insert-created-property ()
+    "Insert :created: property for an Org-roam node.
+
+     Does not override the property if it already exists.
+
+     Calculation of the creation date is based on the filename of the note,
+     and assumes the default Org-roam naming scheme."
+    (interactive)
+    (when (org-roam-file-p)
+      ;; Don't update if the created property already exists
+      (unless (org-entry-get (point-min) "created" t)
+	(let ((creation-time (org-roam-extract-timestamp-from-filepath
+                              (buffer-file-name))))
+          ;; Don't error if the filename doesn't contain a timestamp
+          (when creation-time
+            (save-excursion
+              ;; Ensure point is at the beginning of the buffer
+              (goto-char (point-min))
+              (org-set-property "created" creation-time)))))))
+
+  (defun org-roam-insert-modified-property ()
+    "Update the :modified: property for an Org-roam node upon saving."
+    (when (org-roam-file-p)
+      (save-excursion
+	;; Ensure property is applied to the whole file
+	(goto-char (point-min))
+	(org-set-property
+	 "modified" (format-time-string "%Y%m%d%H%M")))))
+
+  (add-hook 'before-save-hook #'org-roam-insert-created-property)
+  (add-hook 'before-save-hook #'org-roam-insert-modified-property)
+  
+  (setq org-roam-directory "~/org/roam"
+	rg-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (org-roam-db-autosync-mode)
+  ;; https://zettelkasten.de/posts/concepts-sohnke-ahrens-explained/
+  ;; default is going to be the main notes I have, these are the Permanent Notes
+  ;; fleeting is when I am quickly capturing something down and need to refine later
+  ;;   and is equivalent to Fleeting Notes (I am more likely to jot them in my notebook though)
+  ;; literature is for capturing references temporarily and then moving it to something like zotero
+  ;;   this is the equivalent to Literature Notes
+  ;; index is structural notes, kind of like a ToC or MoC and serves as a hub for notes
+  ;; Project Notes I do not really have a need, but is probably best served with a physical notebook 
+  ;;
+  ;; Hubs serves as "topic tags" essentially. I can thus reserve tags for describing the note
+  ;; itself (tags as topics gets too large and messy). For example, I have the usual
+  ;;    fleeting, literature, index
+  ;; which is the the type of note itself, but I also have
+  ;;    question, theory, implementation, definition
+  ;; for how the note is used
+  ;; TODO: maybe use observation, assumption, code, reference?
+  (setq org-roam-capture-templates
+	'(("d" "default" plain "%?"
+	   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+	   :unnarrowed t)
+	  ("f" "fleeting note" plain "%?"
+	   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: fleeting")
+	   :unnarrowed t)
+	  ("l" "literature note" plain "%?"
+	   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: literature")
+	   :unnarrowed t)
+	  ("i" "index note" plain "%?"
+	   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: index")
+	   :unnarrowed t))))
+;;;
+;;; org-roam-ui, the best ui for org and roaming about
+(use-package websocket
+  :ensure t
+  :after org-roam)
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :commands (org-roam-ui-open)
+  :config
+  (setq org-roam-ui-sync-theme t
+	org-roam-ui-follow t
+	org-roam-ui-update-on-save t
+	org-roam-ui-open-on-start t))
+;;;
 ;;; Evil unicorn
 (use-package evil-org
   :ensure t
