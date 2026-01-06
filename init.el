@@ -865,7 +865,14 @@
 ;;; For when I need markdown
 (use-package markdown-mode
   :mode "\\.md\\'"
-  :ensure t)
+  :ensure t
+  :config
+  (setq markdown-make-gfm-checkboxes-buttons t
+        markdown-fontify-whole-heading-line t
+        markdown-fontify-code-blocks-natively t
+	markdown-enable-math t
+	markdown-open-command "xdg-open"
+	markdown-mouse-follow-link nil))
 ;;;
 ;;; Use rust-mode with treesitter integration 
 ;;; TODO: restic-mode ?
@@ -883,7 +890,6 @@
 ;;
 ;; |* Org
 ;;
-;;; TODO: org-roam
 ;;; TODO: org-modern, it takes a while to get it looking good: font choice, color, etc
 ;;;
 ;;; Magical unicorn
