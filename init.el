@@ -610,7 +610,9 @@
   :ensure t
   :after evil
   :general
-  (leader-keys "s" '("search (avy)" . avy-goto-char-2)))
+  (leader-keys "s" '("search (avy)" . avy-goto-char-2))
+  :config
+  (setq avy-background t))
 ;;;
 ;;; Slick search and replace
 (use-package wgrep
