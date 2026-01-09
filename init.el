@@ -1004,6 +1004,7 @@
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
   :general-config
   (localleader-keys 'org-mode-map
+    :prefix "m"
     "f" #'org-roam-node-find
     "F" #'org-roam-ref-find
     "i" #'org-roam-node-insert
@@ -1380,6 +1381,7 @@
     "pi"   "\\pi"
     "epsi" "\\epsilon"
     "nabl" "\\nabla"
+    "lamb" "\\lambda"
     "OO"   "\\emptyset"
     "RR"   "\\R"
     "QQ"   "\\Q"
@@ -1531,4 +1533,23 @@
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
 	  ("https://mcyoung.xyz/feed.xml" optimization))))
+;;;
+;;; 
+;; (use-package nano-calendar
+;;   :ensure t
+;;   :vc (:url "https://github.com/rougier/nano-calendar.git" :rev :newest)
+;;   :commands (nano-calendar)
+;;   :general-config
+;;   (general-def 'normal 'nano-calendar-mode-map
+;;     "l"   #'nano-calendar-goto-next-day
+;;     "h"   #'nano-calendar-goto-prev-day
+;;     "j"   #'nano-calendar-goto-next-week
+;;     "k"   #'nano-calendar-goto-prev-week
+;;     "]]" #'nano-calendar-goto-next-year
+;;     "[[" #'nano-calendar-goto-prev-year
+;;     ")" #'nano-calendar-goto-next-month
+;;     "(" #'nano-calendar-goto-prev-month
+;;     "."   #'nano-calendar-goto-today
+;;     "q"   #'nano-calendar-quit
+;;     "RET" #'nano-calendar-goto-org-agenda))
 ;;; End of the init file
