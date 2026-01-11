@@ -909,13 +909,13 @@
 ;;; https://github.com/astoff/code-cells.el
 (use-package code-cells
   :ensure t
-  :mode "\\.ipynb\\'" code-cells-mode)
+  :mode ("\\.ipynb\\'" . code-cells-mode))
 ;;;
 ;;; Beancount, for counting beans...
 (use-package beancount
   :mode ("\\.bean\\'" . beancount-mode)
-  :hook (beancount-mode . outline-minor-mode)
-  :hook (beancount-mode . flymake-bean-check-enable))
+  :hook ((beancount-mode . outline-minor-mode)
+	 (beancount-mode . flymake-bean-check-enable)))
 ;;;
 ;;
 ;; |* Org
