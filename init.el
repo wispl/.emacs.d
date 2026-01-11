@@ -1108,11 +1108,10 @@
 ;;; Evil unicorn
 (use-package evil-org
   :ensure t
-  :hook
-  ((org-mode . evil-org-mode)
-   (org-agenda-mode . (lambda()
-			(require 'evil-org-agenda)
-			(evil-org-agenda-set-keys)))))
+  :hook ((org-mode . evil-org-mode)
+	 (org-agenda-mode . (lambda()
+			      (require 'evil-org-agenda)
+			      (evil-org-agenda-set-keys)))))
 ;;;
 ;;
 ;; |* Latex
@@ -1262,17 +1261,15 @@
 ;;; Automagically expand snippets without pressing <tab> or entering a space
 (use-package aas
   :ensure t
-  :hook
-  ((LaTeX-mode . aas-activate-for-major-mode)
-   (org-mode . aas-activate-for-major-mode)))
+  :hook ((LaTeX-mode . aas-activate-for-major-mode)
+	 (org-mode . aas-activate-for-major-mode)))
 ;;;
 ;;; A collection of common snippets for use with aas
 (use-package laas
   :ensure t
-  :hook
-  ((LaTeX-mode . laas-mode)
-   (org-mode . laas-mode)
-   (markdown-mode . laas-mode))
+  :hook ((LaTeX-mode . laas-mode)
+	 (org-mode . laas-mode)
+	 (markdown-mode . laas-mode))
   :config
   ;; Do not add space after auto expanding snippets, main use case is so I can
   ;; directly wrap the expanded term into a fraction if I wanted to without
