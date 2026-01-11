@@ -1109,9 +1109,11 @@
 (use-package evil-org
   :ensure t
   :hook ((org-mode . evil-org-mode)
-	 (org-agenda-mode . (lambda()
-			      (require 'evil-org-agenda)
-			      (evil-org-agenda-set-keys)))))
+	 (org-agenda-mode . evil-org-mode))
+  :config
+  (evil-org-set-key-theme)
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 ;;;
 ;;
 ;; |* Latex
