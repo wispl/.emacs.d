@@ -992,6 +992,7 @@
   (advice-add 'org-refile :after
         (lambda (&rest _)
           (org-save-all-org-buffers)))
+  (general-def 'normal 'org-mode-map "RET" #'org-open-at-point)
   (localleader-keys 'org-mode-map
 		    "r" '("org-mode refile" . org-refile)
 		    "t" '("org-mode tag" . org-set-tags-command)
@@ -1003,14 +1004,14 @@
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
   :general-config
+  ;; make sure these do not conflict with the ones above
   (localleader-keys 'org-mode-map
-    :prefix "m"
-    "f" #'org-roam-node-find
-    "F" #'org-roam-ref-find
-    "i" #'org-roam-node-insert
-    "I" #'org-id-get-create
-    "t" #'org-roam-buffer-toggle
-    "r" #'org-roam-refile)
+    "f" '("roam find" . #'org-roam-node-find)
+    "F" '("roam find ref" . #'org-roam-ref-find)
+    "i" '("roam insert" . #'org-roam-node-insert)
+    "I" '("roam id create" . #'org-id-get-create)
+    "b" '("roam backlinks" . #'org-roam-buffer-toggle)
+    "R" '("roam refile" . #'org-roam-refile))
   :config
   ;; From https://jmthornton.net/blog/p/org-roam-created-modified-dates
   ;; Adds created and modified to properties automatically. Using this instead of org-roam-timestamps
@@ -1030,7 +1031,7 @@
     (interactive)
     (when (org-roam-file-p)
       ;; Don't update if the created property already exists
-      (unless (org-entry-get (point-min) "created" t)
+      (unless (org-entry-get (point-min) "date" t)
 	(let ((creation-time (org-roam-extract-timestamp-from-filepath
                               (buffer-file-name))))
           ;; Don't error if the filename doesn't contain a timestamp
@@ -1038,7 +1039,7 @@
             (save-excursion
               ;; Ensure point is at the beginning of the buffer
               (goto-char (point-min))
-              (org-set-property "created" creation-time)))))))
+              (org-set-property "date" creation-time)))))))
 
   (defun org-roam-insert-modified-property ()
     "Update the :modified: property for an Org-roam node upon saving."
@@ -1047,8 +1048,7 @@
 	;; Ensure property is applied to the whole file
 	(goto-char (point-min))
 	(org-set-property
-	 "modified" (format-time-string "%Y%m%d%H%M")))))
-
+	 "updated" (format-time-string "%Y%m%d%H%M")))))
   (add-hook 'before-save-hook #'org-roam-insert-created-property)
   (add-hook 'before-save-hook #'org-roam-insert-modified-property)
   
