@@ -1065,10 +1065,29 @@ If this is a daemon session, load them all immediately instead."
 ;;; Magical unicorn
 (use-package org
   :ensure nil
+  :defer-incrementally
+  calendar find-func format-spec org-macs org-compat org-faces org-entities
+  org-list org-pcomplete org-src org-footnote org-macro ob org org-agenda
+  org-capture
   :general
   (leader-keys
     "na" '("org agenda" . org-agenda)
     "nn" '("org capture" . org-capture))
+  :preface
+  ;; Reduces first load delay, I don't think I need any of these actually,
+  ;; well maybe bibtex in the future
+  (defvar org-modules
+    '(;; ol-w3m
+      ;; ol-bbdb
+      ol-bibtex
+      ;; ol-docview
+      ;; ol-gnus
+      ;; ol-info
+      ;; ol-irc
+      ;; ol-mhe
+      ;; ol-rmail
+      ;; ol-eww
+      ))
   :init
   (defun org-init ()
     ;; Set some nice settings
