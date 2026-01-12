@@ -24,21 +24,7 @@
 ;;;
 ;;; Be forewarned, I have no idea what I am doing...
 ;;;
-;;; Init time recording... just for fun. This was taken from
-;;; https://gist.github.com/rougier/8d5a712aa43e3cc69e7b0e325c84eab4
-;; (defconst init-start-time (current-time))
-;; TODO: open dashboard, or maybe agenda.org, or even org-agenda at startup?
-;; (defun my/init-benchmark ()
-;;   (let ((init-time (float-time (time-subtract (current-time) init-start-time)))
-;; 	(total-time (string-to-number (emacs-init-time "%f"))))
-;;     (message (concat
-;; 	      (propertize "Startup time: " 'face 'bold)
-;; 	      (format "%.2fs " init-time)
-;; 	      (propertize (format "(+ %.2fs system time)"
-;; 				  (- total-time init-time)) 'face 'shadow)))))
-;; (add-hook 'after-init-hook #'my/init-benchmark t)
-;;;
-;;; Use package.el for configuration, I think it is good enough for me right
+;;; I use package.el for configuration, I think it is good enough for me right
 ;;; now. In general, I avoid :init and :custom as much as possible unless
 ;;; it is to set some values.
 ;;;
@@ -54,10 +40,11 @@
 ;;; works, I would type out :hook (blah . pack-mode).
 ;;;
 ;;;
-;;; Lazy load by default
-(setq use-package-always-defer t)
-;;; Package configuration: add MELPA and always defer packages
+;;; Package configuration: add MELPA, always defer packages, and always ensure 
+(setq use-package-always-defer t
+      use-package-always-ensure t)
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
+;;; From doomemacs, adds :defer-incremental and :after-call to use-package
 (defvar doom-incremental-packages '(t)
   "A list of packages to load incrementally after startup. Any large packages
 here may cause noticeable pauses, so it's recommended you break them up into
@@ -315,7 +302,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; keybinds which load the package, and :general-config is used for
 ;;; everything else. In practice I prefer :config over :general-config.
 (use-package general
-  :ensure t
   ;; This module is needed immediately, everything depends on it since it is
   ;; used for keybindings via :general and :general-config.
   :demand t
@@ -333,13 +319,11 @@ If this is a daemon session, load them all immediately instead."
 ;;; on-init-ui-hook. This mirrors doom emacs style and prevents blanket
 ;;; after-init-hooks.
 (use-package on
-  :ensure t
   ;; Load immediately so the hooks are available
   :demand t)
 ;;; Colorscheme
 ;;; TODO: Use custom-face? not sure what are the advantages
 (use-package kanagawa-themes
-  :ensure t
   :demand t
   :config
   (setq kanagawa-themes-comment-italic t)
@@ -446,7 +430,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Vim emulation via evil
 (use-package evil
-  :ensure t
   ;; This is risky, we have to ensure evil is loaded before other modules
   ;; (except general.el and on.el) of course, but it is not too hard, in
   ;; practice, this should mean anything using emacs-startup hook should load
@@ -565,25 +548,21 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Commenting via gcc
 (use-package evil-commentary
-  :ensure t
   :after evil
   :hook (on-first-input . evil-commentary-mode))
 ;;;
 ;;; Surrounding via ys (normal mode) and S (visual mode)
 (use-package evil-surround
-  :ensure t
   :after evil
   :hook (on-first-input . global-evil-surround-mode))
 ;;;
 ;;; Large collection of evil compat modules
 (use-package evil-collection
-  :ensure t
   :after evil
   :hook (evil-mode . evil-collection-init))
 ;;;
 ;;; Allow incrementing via C-a and C-x, use g before for incremental
 (use-package evil-numbers
-  :ensure t
   :after evil
   :general
   (general-def '(normal visual)
@@ -594,17 +573,14 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Allows using * and # on visual selections to search
 (use-package evil-visualstar
-  :ensure t
   :hook (on-first-input . global-evil-visualstar-mode))
 ;;;
 ;;; Indentation text objects
 (use-package evil-indent-plus
-  :ensure t
   :hook (on-first-input . evil-indent-plus-default-bindings))
 ;;;
 ;;; Block textobjs and seeking
 (use-package evil-textobj-anyblock
-  :ensure t
   :after evil
   :general
   (:keymaps 'inner "b" #'evil-textobj-anyblock-inner-block)
@@ -622,12 +598,10 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Matchit
 (use-package evil-matchit
-  :ensure t
   :hook (on-first-input . global-evil-matchit-mode))
 ;;;
 ;;; Modeline for evil
 (use-package doom-modeline
-  :ensure t
   :hook (emacs-startup . doom-modeline-mode)
   :init
   ;; Set these early
@@ -644,9 +618,8 @@ If this is a daemon session, load them all immediately instead."
 ;;; Anzu, shows search results. This is used for evil-anzu which is
 ;;; needed by doom-modeline to show results. I don't think isearach
 ;;; counts work.
-(use-package evil-anzu :ensure t)
+(use-package evil-anzu)
 (use-package anzu
-  :ensure t
   :after-call evil-ex-start-search evil-ex-start-word-search evil-ex-search-activate-highlight
   :config
   (global-anzu-mode +1)
@@ -660,7 +633,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Provides lots of goodies for searching and jumping
 (use-package consult
-  :ensure t
   :general
   (leader-keys
     "/" '("search" . consult-line)
@@ -669,7 +641,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Verical completion buffer in the mini-buffer
 (use-package vertico
-  :ensure t
   :hook (on-first-input . vertico-mode)
   :config
   (setq vertico-count 15
@@ -681,12 +652,10 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Provides annotation (tid bits of information) on the sides for vertico
 (use-package marginalia
-  :ensure t
   :hook (on-first-input . marginalia-mode))
 ;;;
 ;;; embark, basically a context menu activated using keybindings
 (use-package embark
-  :ensure t
   :general
   (general-def minibuffer-local-map
     "C-;"      #'embark-act
@@ -701,7 +670,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; embark integration with consult
 (use-package embark-consult
-  :ensure t
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 ;;;
@@ -711,7 +679,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; TODO: orderless-flex for fuzzy searching?
 (use-package orderless
-  :ensure t
   :after-call on-first-input-hook
   :config
   (setq completion-styles '(orderless basic))
@@ -719,7 +686,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Completion
 (use-package corfu
-  :ensure t
   :hook (on-first-input . global-corfu-mode)
   :config
   (setq corfu-preview-current 'insert
@@ -733,14 +699,12 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Fun icons for corfu
 (use-package nerd-icons-corfu
-  :ensure t
   :after-call global-corfu-mode
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 ;;;
 ;;; Completion extensions for corfu
 (use-package cape
-  :ensure t
   :after-call global-corfu-mode
   :config
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -749,7 +713,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; Jumping around with avy
 ;;; TODO: check out if `avy-goto-char-timer` is better, it is more flexible
 (use-package avy
-  :ensure t
   :after evil
   :general
   (leader-keys "s" '("search (avy)" . avy-goto-char-2))
@@ -758,7 +721,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Slick search and replace
 (use-package wgrep
-  :ensure t
   :commands wgrep-change-to-wgrep-mode
   :config
   (setq wgrep-auto-save-buffer t))
@@ -768,7 +730,6 @@ If this is a daemon session, load them all immediately instead."
 ;;
 ;;; magit ... .... .....
 (use-package magit
-  :ensure t
   :general
   (leader-keys
     "mm" '("magit status" . magit-status)
@@ -780,7 +741,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; VC-gutter! Show diffs in the fringes or margins
 (use-package diff-hl
-  :ensure t
   :hook (on-first-file . global-diff-hl-mode)
   :config
   ;; Already started on-first-file so no need to load on keybinds
@@ -835,7 +795,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Superbuffed dired
 (use-package dirvish
-  :ensure t
   :general
   (leader-keys "os" '("open sidebar" . dirvish-side))
   (leader-keys "of" '("open file manager" . dirvish))
@@ -893,13 +852,11 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Colorful dired
 (use-package diredfl
-  :ensure t
   :hook (dired-mode . diredfl-mode)
   :hook (dirvish-directory-view-mode . diredfl-mode))
 ;;;
 ;;; Delicious terminal emulation
 (use-package eat
-  :ensure t
   :general
   (leader-keys
     "ot" '("open terminal" . eat)
@@ -912,7 +869,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Containerized development
 (use-package docker
-    :ensure t
     :commands docker
     :config
     (setq docker-command "podman"
@@ -923,7 +879,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; more functionality like prompts and fields which aas does not provide out of
 ;;; the box.
 (use-package tempel
-  :ensure t
   :commands (tempel-expand tempel-insert tempel-complete)
   :config
   ;; Sets up a repeat custom element for use in snippets, taken from the example
@@ -1025,7 +980,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; For when I need markdown
 (use-package markdown-mode
   :mode "\\.md\\'"
-  :ensure t
   :config
   (setq markdown-make-gfm-checkboxes-buttons t
         markdown-fontify-whole-heading-line t
@@ -1037,20 +991,17 @@ If this is a daemon session, load them all immediately instead."
 ;;; Use rust-mode with treesitter integration 
 ;;; TODO: restic-mode ?
 (use-package rust-mode
-  :ensure t
   :mode "\\.rs\\'"
   :config
   (setq rust-mode-treesitter-derive t))
 ;;;
 ;;; TODO: Move to nix-ts-mode evenutally
 (use-package nix-mode
-  :ensure t
   :mode "\\.nix\\'")
 ;;;
 ;;; Rare times where I have to work with jupyter notebooks
 ;;; https://github.com/astoff/code-cells.el
 (use-package code-cells
-  :ensure t
   :mode ("\\.ipynb\\'" . code-cells-mode))
 ;;;
 ;;; Beancount, for counting beans...
@@ -1167,7 +1118,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; org-roam, progenitor of all madness
 (use-package org-roam
-  :ensure t
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
   :general-config
@@ -1254,10 +1204,8 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; org-roam-ui, the best ui for org and roaming about
 (use-package websocket
-  :ensure t
   :after org-roam)
 (use-package org-roam-ui
-  :ensure t
   :after org-roam
   :commands (org-roam-ui-open)
   :config
@@ -1268,7 +1216,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Evil unicorn
 (use-package evil-org
-  :ensure t
   :hook ((org-mode . evil-org-mode)
 	 (org-agenda-mode . evil-org-mode))
   :config
@@ -1288,7 +1235,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Pretty symbols and general LaTeX-mode. I hated configuring this...
 (use-package auctex
-  :ensure t
   :mode ("\\.tex\\'" . latex-mode)
   :config
     (setq preview-protect-point t)
@@ -1404,7 +1350,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Viewing pdfs and more
 (use-package pdf-tools
-  :ensure t
   :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-tools-install)
@@ -1419,18 +1364,15 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Automagically compile tex files. Enable via `auctex-cont-latexmk-mode'
 (use-package auctex-cont-latexmk
-  :ensure t
   :commands (auctex-cont-latexmk-toggle))
 ;;;
 ;;; Automagically expand snippets without pressing <tab> or entering a space
 (use-package aas
-  :ensure t
   :hook ((LaTeX-mode . aas-activate-for-major-mode)
 	 (org-mode . aas-activate-for-major-mode)))
 ;;;
 ;;; A collection of common snippets for use with aas
 (use-package laas
-  :ensure t
   :hook ((LaTeX-mode . laas-mode)
 	 (org-mode . laas-mode)
 	 (markdown-mode . laas-mode))
@@ -1563,7 +1505,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; Note to self, this uses mt* to toggle environments and not ts*
 ;;; which is probably better since t is used much more than m.
 (use-package evil-tex
-  :ensure t
   :after evil
   :hook (LaTeX-mode . evil-tex-mode))
 ;;;
@@ -1575,7 +1516,6 @@ If this is a daemon session, load them all immediately instead."
 ;;; Jinx, much faster alternative to flyspell which spells the end for my
 ;;; buffers...
 (use-package jinx
-  :ensure t
   :hook ((text-mode  . jinx-mode)
 	 (latex-mode . jinx-mode))
   :config
@@ -1586,12 +1526,10 @@ If this is a daemon session, load them all immediately instead."
 ;;
 ;; Direnv integration for emacs
 (use-package envrc
-  :ensure t
   :hook (on-first-file . envrc-global-mode))
 ;;;
 ;;; Calendar in emacs
 (use-package calfw
-  :ensure t
   :commands calfw-open-calendar-buffer
   :config
   ;; TODO: Kind of finicky need better solution
@@ -1631,7 +1569,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; org integration for calfw
 (use-package calfw-org
-  :ensure t
   :commands (calfw-org-open-calendar
              calfw-org-create-source
              calfw-org-create-file-source
@@ -1639,29 +1576,24 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Integrates org mode events with calfw
 (use-package calfw-org
-  :ensure t
   :after calfw
   :commands cfw:open-org-calendar)
 ;;;
 ;;; calfw time blocks
 ;; (use-package calfw-blocks
-;;   :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest)
-;;   :ensure t)
+;;   :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
 ;;;
 ;;; Formatter
 ;;; TODO: decide whether to enable globally
-(use-package apheleia
-  :ensure t)
+(use-package apheleia)
 ;;;
 ;;; Flymake backends, mostly for linting
 (use-package flymake-shellcheck
-  :ensure t
   :hook (sh-mode . flymake-shellcheck-load)
   :commands flymake-shellcheck-load)
 ;;;
 ;;; Dashboard, why not
 (use-package dashboard
-  :ensure t
   :demand t
   :config
   (dashboard-setup-startup-hook)
@@ -1675,7 +1607,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Reading feeds in emacs, feeding reads in emacs
 (use-package elfeed
-  :ensure t
   :commands elfeed
   :init
   (setq elfeed-db-directory (file-name-concat user-emacs-directory "data" "elfeed" "db/")
@@ -1703,7 +1634,6 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; 
 ;; (use-package nano-calendar
-;;   :ensure t
 ;;   :vc (:url "https://github.com/rougier/nano-calendar.git" :rev :newest)
 ;;   :commands (nano-calendar)
 ;;   :general-config
