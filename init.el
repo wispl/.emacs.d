@@ -336,24 +336,22 @@ If this is a daemon session, load them all immediately instead."
   :ensure t
   ;; Load immediately so the hooks are available
   :demand t)
-;;;
 ;;; Colorscheme
 ;;; TODO: Use custom-face? not sure what are the advantages
 (use-package kanagawa-themes
   :ensure t
   :demand t
-  :hook
-  (diff-hl-mode . (lambda()
-		    ;; Set these ourselves since they are not really defined in kanagawa-dragon
-		    (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
-		    (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
-		    (set-face-attribute 'diff-hl-delete nil :foreground "#e46876" :background "unspecified")))
   :config
   (setq kanagawa-themes-comment-italic t)
   (load-theme 'kanagawa-dragon t)
   (set-face-background 'header-line "#1d1c19")
   (set-face-background 'mode-line-active "#1d1c19")
-  (set-face-background 'mode-line-inactive "#1d1c19"))
+  (set-face-background 'mode-line-inactive "#1d1c19")
+
+  (with-eval-after-load 'diff-hl
+    (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
+    (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
+    (set-face-attribute 'diff-hl-delete nil :foreground "#e46876" :background "unspecified")))
 ;;;
 ;;
 ;; |* Core
@@ -646,12 +644,13 @@ If this is a daemon session, load them all immediately instead."
 ;;; Anzu, shows search results. This is used for evil-anzu which is
 ;;; needed by doom-modeline to show results. I don't think isearach
 ;;; counts work.
-(use-package anzu :ensure t)
-(use-package evil-anzu
+(use-package evil-anzu :ensure t)
+(use-package anzu
   :ensure t
-  :hook (on-first-input . (lambda ()
-			(global-anzu-mode +1)
-			(require 'evil-anzu))))
+  :after-call evil-ex-start-search evil-ex-start-word-search evil-ex-search-activate-highlight
+  :config
+  (global-anzu-mode +1)
+  (require 'evil-anzu))
 ;;;
 ;;
 ;; |* Editor
@@ -713,9 +712,10 @@ If this is a daemon session, load them all immediately instead."
 ;;; TODO: orderless-flex for fuzzy searching?
 (use-package orderless
   :ensure t
-  :hook (on-first-input . (lambda()
-			    (setq completion-styles '(orderless basic))
-			    (setq completion-category-overrides '((file (styles basic partial-completion)))))))
+  :after-call on-first-input-hook
+  :config
+  (setq completion-styles '(orderless basic))
+  (setq completion-category-overrides '((file (styles basic partial-completion)))))
 ;;;
 ;;; Completion
 (use-package corfu
@@ -734,15 +734,17 @@ If this is a daemon session, load them all immediately instead."
 ;;; Fun icons for corfu
 (use-package nerd-icons-corfu
   :ensure t
-  :hook (global-corfu-mode . (lambda () (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))))
+  :after-call global-corfu-mode
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 ;;;
 ;;; Completion extensions for corfu
 (use-package cape
   :ensure t
-  :hook
-  ((prog-mode text-mode). (lambda ()
-			 (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-			 (add-to-list 'completion-at-point-functions #'cape-file))))
+  :after-call global-corfu-mode
+  :config
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
 ;;;
 ;;; Jumping around with avy
 ;;; TODO: check out if `avy-goto-char-timer` is better, it is more flexible
@@ -1410,9 +1412,10 @@ If this is a daemon session, load them all immediately instead."
   (add-hook 'pdf-view-mode-hook 'pdf-view-themed-minor-mode)
   ;; Fixes flickering of cursor due to evil, and also gets rid of the 
   ;; pesky one pixel border frame on the pdf view as well
-  (add-hook 'pdf-view-mode-hook
-	    (lambda ()
-	      (set (make-local-variable 'evil-normal-state-cursor) (list nil)))))
+  ;; https://www.reddit.com/r/emacs/comments/dgywoo/issue_with_pdfview_midnight_mode/
+  (defun pdf-tools-hide-evil-cursor ()
+      (set (make-local-variable 'evil-normal-state-cursor) (list nil)))
+  (add-hook 'pdf-view-mode-hook #'pdf-tools-hide-evil-cursor))
 ;;;
 ;;; Automagically compile tex files. Enable via `auctex-cont-latexmk-mode'
 (use-package auctex-cont-latexmk
