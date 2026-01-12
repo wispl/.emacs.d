@@ -45,6 +45,7 @@
       use-package-always-ensure t)
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
 ;;; From doomemacs, adds :defer-incremental and :after-call to use-package
+;;; https://github.com/hlissner/doom-emacs/blob/42a21dffddeee57d84e82a9f0b65d1b0cba2b2af/core/core.el#L353
 (defvar doom-incremental-packages '(t)
   "A list of packages to load incrementally after startup. Any large packages
 here may cause noticeable pauses, so it's recommended you break them up into
@@ -317,12 +318,9 @@ If this is a daemon session, load them all immediately instead."
 ;;
 ;;; Little package to add extra hooks like on-first-input and
 ;;; on-init-ui-hook. This mirrors doom emacs style and prevents blanket
-;;; after-init-hooks.
-(use-package on
-  ;; Load immediately so the hooks are available
-  :demand t)
+;;; after-init-hooks. Load immediately so the hooks are available
+(use-package on :demand t)
 ;;; Colorscheme
-;;; TODO: Use custom-face? not sure what are the advantages
 (use-package kanagawa-themes
   :demand t
   :config
@@ -434,7 +432,7 @@ If this is a daemon session, load them all immediately instead."
   ;; (except general.el and on.el) of course, but it is not too hard, in
   ;; practice, this should mean anything using emacs-startup hook should load
   ;; after evil, if it depends on evil.
-  :hook (emacs-startup . evil-mode)
+  :hook (on-init-ui . evil-mode)
   :init
   ;; We want these loaded before evil is loaded so set them in init.  Well,
   ;; it is fine for some of them to be loaded later, but ... I am not smart
@@ -602,7 +600,7 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Modeline for evil
 (use-package doom-modeline
-  :hook (emacs-startup . doom-modeline-mode)
+  :hook (on-init-ui . doom-modeline-mode)
   :init
   ;; Set these early
   (setq doom-modeline-always-show-macro-register t
