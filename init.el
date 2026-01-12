@@ -433,7 +433,7 @@
 (use-package evil-surround
   :ensure t
   :after evil
-  :hook (on-first-input . (lambda() (global-evil-surround-mode 1))))
+  :hook (on-first-input . global-evil-surround-mode))
 ;;;
 ;;; Large collection of evil compat modules
 (use-package evil-collection
@@ -479,8 +479,6 @@
 	  ("\"" . "\"")
 	  ("`" . "`")
 	  ("“" . "”"))))
-;;;
-;;; 
 ;;;
 ;;; Matchit
 (use-package evil-matchit
