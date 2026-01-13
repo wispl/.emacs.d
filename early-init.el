@@ -28,6 +28,10 @@
 ;; windowing systems and also on font changes
 (setq frame-inhibit-implied-resize t)
 
+;; Small improvement to start up times
+(setq site-run-file nil
+      inhibit-default-init t)
+
 ;; Quiet startup
 (setq inhibit-startup-message t
       inhibit-splash-screen t

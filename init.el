@@ -191,6 +191,8 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Nice defaults
 (setq-default fill-column 80)
+;;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
+(setq idle-update-delay 1)
 (setq use-file-dialog nil
       tab-bar-new-button ""
       tab-bar-close-button-show nil
@@ -207,6 +209,7 @@ If this is a daemon session, load them all immediately instead."
       split-width-threshold nil
       split-height-threshold 160)
 ;; TODO: saveplace-mode and save-hist-mode
+(setq native-comp-async-report-warnings-errors nil)
 (blink-cursor-mode -1)
 (global-hl-line-mode 1)
 ;;
@@ -390,6 +393,8 @@ If this is a daemon session, load them all immediately instead."
 ;;; Recent files for recent stuff
 (use-package recentf
   :ensure nil
+  ;; Not going to lie, I have no idea what these are
+  :defer-incrementally easymenu tree-widget timer
   :hook (on-first-file-hook . recentf-mode)
   :commands recentf-open-files
   :config
@@ -483,7 +488,7 @@ If this is a daemon session, load them all immediately instead."
     ;; Enter normal mode by entering jk while in insert mode
     "j" (general-key-dispatch 'self-insert-command :timeout 0.25 "k" #'evil-normal-state)
     ;; Paste in insert mode via Ctrl-Shift-v
-    "C-V" #'evil-paste-before
+    "C-r" #'evil-paste-from-register
     ;; Overloaded tabbing
     "<tab>"     #'smarttab
     "<backtab>" #'smartshifttab)
@@ -728,6 +733,8 @@ If this is a daemon session, load them all immediately instead."
 ;;
 ;;; magit ... .... .....
 (use-package magit
+  :defer-incrementally
+  dash f s with-editor git-commit package eieio transient
   :general
   (leader-keys
     "mm" '("magit status" . magit-status)
