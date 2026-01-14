@@ -222,7 +222,6 @@ If this is a daemon session, load them all immediately instead."
 ;; Truncate lines instead of wrapping when in prog mode, but wrap
 ;; lines in text like formats (like latex and regular text)
 (add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
-(add-hook 'TeX-mode-hook #'visual-line-mode)
 (add-hook 'text-mode-hook #'visual-line-mode)
 ;;
 ;; Set encoding
@@ -985,6 +984,7 @@ If this is a daemon session, load them all immediately instead."
 ;;; For when I need markdown
 (use-package markdown-mode
   :mode "\\.md\\'"
+  :hook (markdown-mode . visual-line-mode)
   :config
   (setq markdown-make-gfm-checkboxes-buttons t
         markdown-fontify-whole-heading-line t
@@ -1027,6 +1027,7 @@ If this is a daemon session, load them all immediately instead."
   calendar find-func format-spec org-macs org-compat org-faces org-entities
   org-list org-pcomplete org-src org-footnote org-macro ob org org-agenda
   org-capture
+  :hook (org-mode . visual-line-mode)
   :general
   (leader-keys
     "na" '("org agenda" . org-agenda)
@@ -1241,6 +1242,7 @@ If this is a daemon session, load them all immediately instead."
 ;;; Pretty symbols and general LaTeX-mode. I hated configuring this...
 (use-package auctex
   :mode ("\\.tex\\'" . latex-mode)
+  :hook (TeX-mode . auto-fill-mode)
   :config
     (setq preview-protect-point t)
   (setq preview-locating-previews-message nil)
@@ -1530,8 +1532,7 @@ If this is a daemon session, load them all immediately instead."
     "[s" #'jinx-previous))
 ;;
 ;; Direnv integration for emacs
-(use-package envrc
-  :hook (on-first-file . envrc-global-mode))
+(use-package envrc :hook (on-first-file . envrc-global-mode))
 ;;;
 ;;; Calendar in emacs
 (use-package calfw
@@ -1636,6 +1637,11 @@ If this is a daemon session, load them all immediately instead."
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
 	  ("https://mcyoung.xyz/feed.xml" optimization))))
+;;;
+;;; Nice margins for reading text-based stuff
+(use-package olivetti
+  :general
+  (leader-keys "oz" '("open zen" . olivetti-mode)))
 ;;;
 ;;; 
 ;; (use-package nano-calendar
