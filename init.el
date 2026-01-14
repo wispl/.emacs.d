@@ -1523,8 +1523,11 @@ If this is a daemon session, load them all immediately instead."
 ;;; Jinx, much faster alternative to flyspell which spells the end for my
 ;;; buffers...
 (use-package jinx
-  :hook ((text-mode  . jinx-mode)
-	 (latex-mode . jinx-mode))
+  ;; I pull this in using nix and not package.el
+  :ensure nil
+  :hook ((text-mode . jinx-mode)
+	 (TeX-mode . jinx-mode)
+	 (markdown-mode . jinx-mode))
   :config
   (general-def 'insert "C-l" #'jinx-correct)
   (general-def 'normal
