@@ -1,51 +1,58 @@
-;;; init.el -*- lexical-binding: t; -*-
+;;;; init.el -*- lexical-binding: t; -*-
+;;;;
 ;;;
+;;; A fledging bird's emacs config
+;;;
+;;;    ⠀⠀⠀⠀⠀⠀⢀⣠⠴⠒⠒⠒⠒⠒⠶⠦⠤⠴⠒⠚⠉⣰⠟⠁⠀⠀⠀⠀⠀⠀
+;;;    ⠀⠀⠀⠀⢀⡞⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⡿⠃⠀⠀⠀⠀⠀⠀⠀⠀
+;;;    ⠀⠀⠀⢠⡿⣤⣄⠀⠀⠀⠀⠀⢀⣤⣄⠀⠀⠀⣰⠞⠁⠀⠀⠀⢠⣤⠀⠀⠀⠀
+;;;    ⠀⠀⢠⡟⠸⣿⡿⢀⠤⢄⠀⠐⣷⣿⣿⡷⠀⠀⢻⠀⠀⠀⢀⡴⠋⠘⡇⠀⠀⠀
+;;;    ⠀⠀⢸⠈⠲⡬⢠⡏⠀⢀⡷⠀⠨⣭⠭⠖⣇⠀⣾⠀⠀⡴⠋⠀⠀⠀⣧⠀⠀⠀
+;;;    ⠀⠀⢸⣷⠞⠁⠀⠳⠖⠋⠀⠀⠀⠙⠶⠶⠃⡼⢿⣠⠎⠀⠀⠀⠀⠀⣿⠀⠀⠀
+;;;    ⠀⠀⢸⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡾⠃⠀⠀⠀⠀⠀⠀⡟⠀⠀⠀
+;;;    ⠀⠀⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⢠⠃⠀⠀⠄
+;;;    ⢀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠉⠉⠉⠉⠲⢄⡀⢀⣠⡷⠀⠀⢠
+;;;    ⢸⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠧⠤⢾⢀⠏
+;;;    ⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⠏⠀
+;;;    ⢸⠀⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡏⠀⠀
+;;;    ⠈⢷⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⡀⠀⠀⠀⠀⠀⠀⢀⣤⡏⠀⠀⠀
+;;;    ⠀⠈⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠲⠶⠶⠖⠊⠁⣴⠇⠀⠀⠀
+;;;    ⠀⠀⠘⢧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⠁⠀⠀⠀⠀
+;;;    ⠀⠀⠀⠈⠻⢦⣀⠀⠀⠀⠀⠀⠀⣠⣎⡀⡀⠀⠀⣀⣰⢶⠶⠚⠁⠀⠀⠀⠀⠀
+;;;    ⠀⠀⠀⠀⣰⠛⠉⡙⠛⢛⣷⠖⠒⢖⣾⠟⢛⠛⠺⣿⣏⠁⠀⠀⠀⠀⠀⠀⠀⠀
+;;;
+;;;;
+;;;; Be forewarned, I have no idea what I am doing...
+;;;;
+;;;; I use package.el for configuration, I think it is good enough for me right
+;;;; now. In general, I avoid :init and :custom as much as possible unless
+;;;; it is to set some values.
+;;;;
+;;;; :custom is avoided because it for some reason slows startup, I think there
+;;;; is a distinction between :custom and :config, namely setq vs setopt but I am
+;;;; too much of a fledging to understand its consequences for now...
+;;;;
+;;;; Since I don't want to deal with org mode and tangling, I instead opt for
+;;;; providing descriptions in the comments. Each section has a "flag" which can
+;;;; easily be searched for, like this: |* Section.
+;;;;
+;;;; For :hook, I avoid the shorthand for consistency so even if :hook (blah)
+;;;; works, I would type out :hook (blah . pack-mode).
+
+;;;; Start of the init file
+;;;; Package.el
 ;;
-;; A fledging bird's emacs config
-;;
-;;    ⠀⠀⠀⠀⠀⠀⢀⣠⠴⠒⠒⠒⠒⠒⠶⠦⠤⠴⠒⠚⠉⣰⠟⠁⠀⠀⠀⠀⠀⠀
-;;    ⠀⠀⠀⠀⢀⡞⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⡿⠃⠀⠀⠀⠀⠀⠀⠀⠀
-;;    ⠀⠀⠀⢠⡿⣤⣄⠀⠀⠀⠀⠀⢀⣤⣄⠀⠀⠀⣰⠞⠁⠀⠀⠀⢠⣤⠀⠀⠀⠀
-;;    ⠀⠀⢠⡟⠸⣿⡿⢀⠤⢄⠀⠐⣷⣿⣿⡷⠀⠀⢻⠀⠀⠀⢀⡴⠋⠘⡇⠀⠀⠀
-;;    ⠀⠀⢸⠈⠲⡬⢠⡏⠀⢀⡷⠀⠨⣭⠭⠖⣇⠀⣾⠀⠀⡴⠋⠀⠀⠀⣧⠀⠀⠀
-;;    ⠀⠀⢸⣷⠞⠁⠀⠳⠖⠋⠀⠀⠀⠙⠶⠶⠃⡼⢿⣠⠎⠀⠀⠀⠀⠀⣿⠀⠀⠀
-;;    ⠀⠀⢸⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡾⠃⠀⠀⠀⠀⠀⠀⡟⠀⠀⠀
-;;    ⠀⠀⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⢠⠃⠀⠀⠄
-;;    ⢀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠉⠉⠉⠉⠲⢄⡀⢀⣠⡷⠀⠀⢠
-;;    ⢸⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠓⠧⠤⢾⢀⠏
-;;    ⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢨⠏⠀
-;;    ⢸⠀⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡏⠀⠀
-;;    ⠈⢷⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⡀⠀⠀⠀⠀⠀⠀⢀⣤⡏⠀⠀⠀
-;;    ⠀⠈⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠑⠲⠶⠶⠖⠊⠁⣴⠇⠀⠀⠀
-;;    ⠀⠀⠘⢧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⠁⠀⠀⠀⠀
-;;    ⠀⠀⠀⠈⠻⢦⣀⠀⠀⠀⠀⠀⠀⣠⣎⡀⡀⠀⠀⣀⣰⢶⠶⠚⠁⠀⠀⠀⠀⠀
-;;    ⠀⠀⠀⠀⣰⠛⠉⡙⠛⢛⣷⠖⠒⢖⣾⠟⢛⠛⠺⣿⣏⠁⠀⠀⠀⠀⠀⠀⠀⠀
-;;
-;;;
-;;; Be forewarned, I have no idea what I am doing...
-;;;
-;;; I use package.el for configuration, I think it is good enough for me right
-;;; now. In general, I avoid :init and :custom as much as possible unless
-;;; it is to set some values.
-;;;
-;;; :custom is avoided because it for some reason slows startup, I think there
-;;; is a distinction between :custom and :config, namely setq vs setopt but I am
-;;; too much of a fledging to understand its consequences for now...
-;;;
-;;; Since I don't want to deal with org mode and tangling, I instead opt for
-;;; providing descriptions in the comments. Each section has a "flag" which can
-;;; easily be searched for, like this: |* Section.
-;;;
-;;; For :hook, I avoid the shorthand for consistency so even if :hook (blah)
-;;; works, I would type out :hook (blah . pack-mode).
-;;;
-;;;
-;;; Package configuration: add MELPA, always defer packages, and always ensure 
+;; Add MELPA, always defer packages, and always ensure 
 (setq use-package-always-defer t
       use-package-always-ensure t)
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
-;;; From doomemacs, adds :defer-incremental and :after-call to use-package
-;;; https://github.com/hlissner/doom-emacs/blob/42a21dffddeee57d84e82a9f0b65d1b0cba2b2af/core/core.el#L353
+
+
+
+;;;; Doomemacs
+;;
+;; From doomemacs, adds :defer-incremental and :after-call to use-package
+;; https://github.com/hlissner/doom-emacs/blob/42a21dffddeee57d84e82a9f0b65d1b0cba2b2af/core/core.el#L353
 (defvar doom-incremental-packages '(t)
   "A list of packages to load incrementally after startup. Any large packages
 here may cause noticeable pauses, so it's recommended you break them up into
@@ -188,98 +195,99 @@ If this is a daemon session, load them all immediately instead."
            (nconc (assq ',name doom--deferred-packages-alist)
                   '(,@hooks)))
          (use-package-process-keywords name rest state))))))
-;;;
-;;; Nice defaults
+
+;;;; Defaults 
 (use-package emacs
   :ensure nil
   :demand t
   :init
   (setq-default fill-column 80)
-;;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
+  ;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
   (setq idle-update-delay 1)
-  (setq use-file-dialog nil
-	tab-bar-new-button ""
+  ;; Fonts
+  (add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
+  ;; Tab bar
+  (setq tab-bar-new-button ""
 	tab-bar-close-button-show nil
 	tab-bar-back-button ""
 	tab-bar-auto-width nil
-	tab-bar-separator "    "
+	tab-bar-separator "    ")
+  ;; Behavior
+  (setq use-file-dialog nil
 	;; I find these clunky to use, and backups of the files themselves can be
 	;; potentially dangerous to have floating around.
 	make-backup-files nil
 	create-lockfiles nil
+
 	;; No need to have duplicates...
 	kill-do-not-save-duplicates t
+
 	;; Vertical splits over horizontal ones
 	split-width-threshold nil
-	split-height-threshold 160)
+	split-height-threshold 160
+
+	;; Scrolling and scroll off
+	scroll-step 1
+	auto-window-vscroll nil
+	scroll-margin 7
+
+	;; Silence native comp errors
+	native-comp-async-report-warnings-errors nil
+
+	;; Move custom stuff elsewhere and don't load them, I prefer
+	;; customizing through code. This cause problems down the road...
+	custom-file "~/.config/emacs/custom.el"
+
+	;; Don't render stuff in inactive windows, distracting...
+	cursor-in-non-selected-windows nil
+	highlight-nonselected-windows nil)
+
   ;; TODO: saveplace-mode and save-hist-mode
-  (setq native-comp-async-report-warnings-errors nil)
   (blink-cursor-mode -1)
   (global-hl-line-mode 1)
-  ;;
+
   ;; From Doom, this saves some space when using splits
   (setq window-divider-default-places t
 	window-divider-default-bottom-width 1
 	window-divider-default-right-width 1)
   (add-hook 'on-init-ui-hook #'window-divider-mode)
-  ;;
+
   ;; Truncate lines instead of wrapping when in prog mode, but wrap
   ;; lines in text like formats (like latex and regular text)
   (add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
   (add-hook 'text-mode-hook #'visual-line-mode)
-  ;;
+
   ;; Set encoding
   (set-language-environment "UTF-8")
   (setq default-input-method nil)
-  ;;
-  ;; Don't render stuff in inactive windows, distracting...
-  (setq cursor-in-non-selected-windows nil
-	highlight-nonselected-windows nil)
-  ;;
-  ;; Scrolling
-  (setq scroll-step 1
-	auto-window-vscroll nil
-	;; scroll off
-	scroll-margin 7)
+  ;; Completion menus (vertico and corfu)
+
   ;; For corfu, note that 'complete removes inserting tabs... a hefty price
   ;; But you can still indent so it is fine: indent with tabs align with spaces
   (setq tab-always-indent 'complete
-	text-mode-ispell-word-completion nil)
-  ;;
-  ;; Recommend by vertico and good defaults too
-  ;; 
-  ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
-  ;; to switch display modes.
-  (setq context-menu-mode t)
-  ;; Support opening new minibuffers from inside existing minibuffers.
-  (setq enable-recursive-minibuffers t)
-  ;;
-  ;; Hide commands in M-x which do not work in the current mode.  Vertico
-  ;; commands are hidden in normal buffers. This setting is useful beyond
-  ;; Vertico.
-  (setq read-extended-command-predicate #'command-completion-default-include-p)
-  ;;
-  ;; Do not allow the cursor in the minibuffer prompt
-  (setq minibuffer-prompt-properties
-	'(read-only t cursor-intangible t face minibuffer-prompt))
-  ;;
+	text-mode-ispell-word-completion nil
+	;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
+	;; to switch display modes.
+	;; Support opening new minibuffers from inside existing minibuffers.
+	context-menu-mode t
+	enable-recursive-minibuffers t
+	;; Hide commands in M-x which do not work in the current mode.  Vertico
+	;; commands are hidden in normal buffers. This setting is useful beyond
+	;; Vertico.
+	read-extended-command-predicate #'command-completion-default-include-p
+	;; Do not allow the cursor in the minibuffer prompt
+	minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
+
   ;; Properly deletes tabs
   (setq backward-delete-char-untabify-method nil)
-  ;;
-  ;; Font
-  (add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
-  ;;
-  ;; Move custom stuff elsewhere and don't load them, I prefer
-  ;; customizing through code. This cause problems down the road...
-  (setq custom-file "~/.config/emacs/custom.el")
-  ;;
-  ;; Performance!!!!!! Most of these were pilfered from Doom.
-  ;; Not really needed, disabling saves some time.
+  ;; Performance!!!!!!
+  ;; Most of these were pilfered from Doom. Not really needed, disabling saves
+  ;; some time.
   (setq auto-mode-case-fold nil)
   ;; Don't really use these so setting these should be fine
+  (setq bidi-inhibit-bpa t)
   (setq-default bidi-display-reordering 'left-to-right
 		bidi-paragraph-direction 'left-to-right)
-  (setq bidi-inhibit-bpa t)
   ;; Helps with scrolling performance
   (setq redisplay-skip-fontification-on-input t)
   ;;
@@ -301,13 +309,16 @@ If this is a daemon session, load them all immediately instead."
 	   (window-width . 0.45)
 	   (side . right)
 	   (slot . 1)))))
-;;;
+
+;;;;
+;;;; General
 ;;
-;; |* Startup
-;;
-;;; Use general for keybindings, as recommended, :general is used for
-;;; keybinds which load the package, and :general-config is used for
-;;; everything else. In practice I prefer :config over :general-config.
+;; Use general for keybindings. As recommended, :general is used for
+;; keybinds which load the package, and :general-config is used for
+;; everything else. In practice I prefer :config over :general-config.
+;; I defined two leaderkeys: <space> which is available all the time and
+;; <space>l, the localleader, which has different keybinds depending on
+;; the current major mode
 (use-package general
   ;; This module is needed immediately, everything depends on it since it is
   ;; used for keybindings via :general and :general-config.
@@ -321,12 +332,15 @@ If this is a daemon session, load them all immediately instead."
   (general-create-definer localleader-keys
     :states '(normal visual)
     :prefix "SPC l"))
+
+;;;; On
 ;;
-;;; Little package to add extra hooks like on-first-input and
-;;; on-init-ui-hook. This mirrors doom emacs style and prevents blanket
-;;; after-init-hooks. Load immediately so the hooks are available
+;; Little package to add extra hooks like on-first-input and
+;; on-init-ui-hook. This mirrors doom emacs style and prevents blanket
+;; after-init-hooks. Load immediately so the hooks are available.
 (use-package on :demand t)
-;;; Colorscheme
+
+;;;; Colorscheme
 (use-package kanagawa-themes
   :demand t
   :config
@@ -340,18 +354,22 @@ If this is a daemon session, load them all immediately instead."
     (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
     (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
     (set-face-attribute 'diff-hl-delete nil :foreground "#e46876" :background "unspecified")))
-;;;
+
+;;;; Builtin 
 ;;
-;; |* Core
-;;
-;;; Builtin packages which just need a little more configuration.
-;;;
-;;; which-key, no introduction needed
+;; These are built-in, the configurations here just tweak them so they either
+;; become cooler or are lazyloaded. Included are
+;;   which-key: the non-evil version of the witch-key  
+;;   dired: browsing files in dire situations
+;;   project: looking at eternally unfinished projects
+;;   eshell: for when `eat is too gluttonous
+;;   flymake: making things on the fly
+;;   recentf: recent files for recent stuff
+;;   tab-bar: keeping tabs on projects (not buffers)
+;; Changes should be fairly minimal if possible
 (use-package which-key
   :ensure nil
   :hook (on-first-input . which-key-mode))
-;;
-;; Little quality of life for dired
 (use-package dired
   :ensure nil
   :commands dired-jump
@@ -359,8 +377,6 @@ If this is a daemon session, load them all immediately instead."
   (setq dired-dwim-target t)
   :config
   (setq dired-listing-switches "-Ahl -v --group-directories-first"))
-;;;
-;;; project, also no introduction needed
 (use-package project
   :ensure nil
   :general
@@ -373,16 +389,10 @@ If this is a daemon session, load them all immediately instead."
     "x" '("project kill buffers" . project-kill-buffers)
     "f" '("project files" . project-find-file)
     "s" '("project search" . project-search)))
-;;;
-;;; For when I don't need a full terminal, although eshell can integrate with
-;;; eat if need be.
 (use-package eshell
   :ensure nil
   :general
   (leader-keys "oe" '("open eshell" . eshell)))
-;;;
-;;; Syntax checking on the fly. Flycheck might be better, but a good amount of
-;;; packages I am using right now defaults to flymake. It is also builtin...
 (use-package flymake
   :ensure nil
   ;; Use config because usually flymake already gets loaded by some other modes
@@ -392,8 +402,6 @@ If this is a daemon session, load them all immediately instead."
   (general-def 'normal
     "]d" '("next diagnostic" . flymake-goto-next-error)
     "[d" '("previous diagnostic" . flymake-goto-prev-error)))
-;;;
-;;; Recent files for recent stuff
 (use-package recentf
   :ensure nil
   ;; Not going to lie, I have no idea what these are
@@ -408,8 +416,6 @@ If this is a daemon session, load them all immediately instead."
   ;; From doom, clean recentf at exit unless it is a daemon 
   (setq recentf-auto-cleanup (if (daemonp) 300))
   (add-hook 'kill-emacs-hook #'recentf-cleanup))
-;;
-;; Nicer tabs
 (use-package tab-bar
   :ensure nil
   :commands tab-new
@@ -425,16 +431,23 @@ If this is a daemon session, load them all immediately instead."
   (setq tab-bar-format (butlast tab-bar-format))
   (add-to-list 'tab-bar-format 'tab-bar-icon)
   (add-to-list 'tab-bar-format 'tab-bar-top-pad t))
-;;;
-;;; Window rules
-;;;
+
+;;;; Evil
 ;;
-;; |* Evil
-;;
-;;; TODO: Majority of load time is due to evil mode, maybe find a way to lazy
-;;; load this better?
-;;;
-;;; Vim emulation via evil
+;; Vim emulation via evil, cause life isn't fun without being evil.
+;; This is the usual evil stuff with the usual evil modules
+;;   evil: the head honcho of evil
+;;   evil-commentary: 'gc' to comment (TODO: replace with evil-nerd-commenter?)
+;;   evil-surround: 'ys' in normal mode and 'S' in visual mode to surround
+;;   evil-collection: halloween goodie bag
+;;   evil-numbers: incrementing via 'C-a' and 'C-x', use g before for global incrementing
+;;   evil-visualstar: use '*' and '#' on visual selections to search
+;;   evil-indent-plus: indentation text objects
+;;   evil-matchit: matches vim's matchit
+;;   evil-textobj-anyblock: block textobjs and look ahead for them
+;;   doom-modeline: modeline
+;;   anzu and evil anzu: anzu, shows search results, used by 'doom-modeline'
+;; Evil is a constant battle between emacs and evil.
 (use-package evil
   ;; This is risky, we have to ensure evil is loaded before other modules
   ;; (except general.el and on.el) of course, but it is not too hard, in
@@ -549,25 +562,15 @@ If this is a daemon session, load them all immediately instead."
     "ht"    '("help function" . describe-face)
     "hf"    '("help function" . describe-function)
     "hk"    '("help key" . describe-key)))
-;;;
-;;; Modules for extending evil
-;;;
-;;; Commenting via gcc
 (use-package evil-commentary
   :after evil
   :hook (on-first-input . evil-commentary-mode))
-;;;
-;;; Surrounding via ys (normal mode) and S (visual mode)
 (use-package evil-surround
   :after evil
   :hook (on-first-input . global-evil-surround-mode))
-;;;
-;;; Large collection of evil compat modules
 (use-package evil-collection
   :after evil
   :hook (evil-mode . evil-collection-init))
-;;;
-;;; Allow incrementing via C-a and C-x, use g before for incremental
 (use-package evil-numbers
   :after evil
   :general
@@ -576,16 +579,9 @@ If this is a daemon session, load them all immediately instead."
    "C-x"   #'evil-numbers/dec-at-pt
    "g C-a" #'evil-numbers/inc-at-pt-incremental
    "g C-x" #'evil-numbers/dec-at-pt-incremental))
-;;;
-;;; Allows using * and # on visual selections to search
-(use-package evil-visualstar
-  :hook (on-first-input . global-evil-visualstar-mode))
-;;;
-;;; Indentation text objects
-(use-package evil-indent-plus
-  :hook (on-first-input . evil-indent-plus-default-bindings))
-;;;
-;;; Block textobjs and seeking
+(use-package evil-visualstar :hook (on-first-input . global-evil-visualstar-mode))
+(use-package evil-indent-plus :hook (on-first-input . evil-indent-plus-default-bindings))
+(use-package evil-matchit :hook (on-first-input . global-evil-matchit-mode))
 (use-package evil-textobj-anyblock
   :after evil
   :general
@@ -601,12 +597,6 @@ If this is a daemon session, load them all immediately instead."
 	  ("\"" . "\"")
 	  ("`" . "`")
 	  ("“" . "”"))))
-;;;
-;;; Matchit
-(use-package evil-matchit
-  :hook (on-first-input . global-evil-matchit-mode))
-;;;
-;;; Modeline for evil
 (use-package doom-modeline
   :hook (on-init-ui . doom-modeline-mode)
   :init
@@ -620,32 +610,33 @@ If this is a daemon session, load them all immediately instead."
   :config
   ;; Simpler modeline for sidebar
   (doom-modeline-def-modeline 'sidebar '(bar buffer-info-simple) '()))
-;;;
-;;; Anzu, shows search results. This is used for evil-anzu which is
-;;; needed by doom-modeline to show results. I don't think isearach
-;;; counts work.
 (use-package evil-anzu)
 (use-package anzu
   :after-call evil-ex-start-search evil-ex-start-word-search evil-ex-search-activate-highlight
   :config
   (global-anzu-mode +1)
   (require 'evil-anzu))
-;;;
+
+;;;; Editor
 ;;
-;; |* Editor
-;;
-;;; Important packages for editing, this is the usual stack:
-;;; consult, corfu, marginalia, vertico, embark, and orderless
-;;;
-;;; Provides lots of goodies for searching and jumping
+;; Important packages for editing, this is the usual "modern" stack:
+;;   consult: provides lots of goodies for searching and jumping
+;;   vertico: verical completion buffer in the mini-buffer
+;;   marginalia: provides annotation (tiny bits of information) on the sides for vertico
+;;   corfu, nerd-icons-corfu: completion
+;;   cape: completion extensions for corfu
+;;   embark: basically a context menu activated using keybindings (supercharged which-key?)
+;;   embark-consult: embark integration with consult
+;;   orderless: searching by using matched components separated by space in any order (TODO: orderless-flex?)
+;;   avy: jumping around (like vim-sneak, vim-easymotion, and co.)
+;;   wgrep: slick search and replace
+;; Editing is a hard job
 (use-package consult
   :general
   (leader-keys
     "/" '("search" . consult-line)
     "g" '("grep" . consult-ripgrep)
     "b" '("buffer" . consult-buffer)))
-;;;
-;;; Verical completion buffer in the mini-buffer
 (use-package vertico
   :hook (on-first-input . vertico-mode)
   :config
@@ -655,12 +646,7 @@ If this is a daemon session, load them all immediately instead."
     "C-SPC" #'+vertico/embark-preview
     "C-M-n" #'vertico-next-group
     "C-M-p" #'vertico-previous-group))
-;;;
-;;; Provides annotation (tid bits of information) on the sides for vertico
-(use-package marginalia
-  :hook (on-first-input . marginalia-mode))
-;;;
-;;; embark, basically a context menu activated using keybindings
+(use-package marginalia :hook (on-first-input . marginalia-mode))
 (use-package embark
   :general
   (general-def minibuffer-local-map
@@ -673,24 +659,12 @@ If this is a daemon session, load them all immediately instead."
 	       '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
 		 nil
 		 (window-parameters (mode-line-format . none)))))
-;;;
-;;; embark integration with consult
-(use-package embark-consult
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-;;;
-;;; Super duper cool package which makes searching much nice.
-;;; Separate components by spaces and use those to match candidates in
-;;; any order! Orderless
-;;;
-;;; TODO: orderless-flex for fuzzy searching?
+(use-package embark-consult :hook (embark-collect-mode . consult-preview-at-point-mode))
 (use-package orderless
   :after-call on-first-input-hook
   :config
   (setq completion-styles '(orderless basic))
   (setq completion-category-overrides '((file (styles basic partial-completion)))))
-;;;
-;;; Completion
 (use-package corfu
   :hook (on-first-input . global-corfu-mode)
   :config
@@ -702,39 +676,37 @@ If this is a daemon session, load them all immediately instead."
 	corfu-cycle nil
 	corfu-preselect-first t
 	completion-cycle-threshold nil))
-;;;
-;;; Fun icons for corfu
 (use-package nerd-icons-corfu
   :after-call global-corfu-mode
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-;;;
-;;; Completion extensions for corfu
 (use-package cape
   :after-call global-corfu-mode
   :config
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file))
-;;;
-;;; Jumping around with avy
-;;; TODO: check out if `avy-goto-char-timer` is better, it is more flexible
 (use-package avy
   :after evil
   :general
+  ;; TODO: check out if `avy-goto-char-timer` is better, it is more flexible
   (leader-keys "s" '("search (avy)" . avy-goto-char-2))
   :config
   (setq avy-background t))
-;;;
-;;; Slick search and replace
 (use-package wgrep
   :commands wgrep-change-to-wgrep-mode
   :config
   (setq wgrep-auto-save-buffer t))
-;;;
+
+;;;; Development
 ;;
-;; |* Dev
-;;
-;;; magit ... .... .....
+;; Actually using Emacs for coding. Proposterous, I know.
+;;   magit: you shall not push
+;;   diff-hl: vc signs in your gutters (fringees and guts)
+;;   dirvish: sidebar, but also super ranger file manager for emacs
+;;   dired-fl: color dired font locks
+;;   eat: delicious terminal emulation
+;;   docker: containerized development
+;;   tempel: snippets and templates
 (use-package magit
   :defer-incrementally
   dash f s with-editor git-commit package eieio transient
@@ -746,8 +718,6 @@ If this is a daemon session, load them all immediately instead."
     "md" '("magit diff" . magit-diff-buffer-file))
   :config
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
-;;;
-;;; VC-gutter! Show diffs in the fringes or margins
 (use-package diff-hl
   :hook (on-first-file . global-diff-hl-mode)
   :config
@@ -800,8 +770,6 @@ If this is a daemon session, load them all immediately instead."
 	diff-hl-update-async t
 	;; updating diffs while staging and unstaging hunks
 	diff-hl-show-staged-changes nil))
-;;;
-;;; Superbuffed dired
 (use-package dirvish
   :general
   (leader-keys "os" '("open sidebar" . dirvish-side))
@@ -857,13 +825,9 @@ If this is a daemon session, load them all immediately instead."
   (setq dirvish-side-window-parameters
 	'((no-other-window . nil)
 	  (no-delete-other-windows . t))))
-;;;
-;;; Colorful dired
 (use-package diredfl
   :hook (dired-mode . diredfl-mode)
   :hook (dirvish-directory-view-mode . diredfl-mode))
-;;;
-;;; Delicious terminal emulation
 (use-package eat
   :general
   (leader-keys
@@ -874,18 +838,12 @@ If this is a daemon session, load them all immediately instead."
   (general-def 'insert 'eat-mode-map
    "<tab>" #'eat-self-input
    "<backtab>" #'eat-self-input))
-;;;
-;;; Containerized development
 (use-package docker
     :commands docker
     :config
     (setq docker-command "podman"
 	  docker-compose-command "podman-compose"
 	  docker-container-tramp-method "podman"))
-;;;
-;;; Snippets vial tempel, this can be used standalone or inside aas snippets for
-;;; more functionality like prompts and fields which aas does not provide out of
-;;; the box.
 (use-package tempel
   :commands (tempel-expand tempel-insert tempel-complete)
   :config
@@ -901,11 +859,32 @@ If this is a daemon session, load them all immediately instead."
     (add-hook 'completion-at-point-functions #'tempel-expand -1 'local))
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
-;;;
+
+;;;; Languages
 ;;
-;; |* Languages
-;;
-;;; Powered by treesitter as much as possible.
+;; Coding languages, not actual languages (unfortunate). Powered by treesitter
+;; as much as possible, which provides highlighting, indentation, and
+;; combobulations. This is separted into three main categories: coding, org, and
+;; latex.
+;;   treesit: builtin sitter of trees
+;;   c-ts-mode: sets linux style indentation and sibling files (I hate C)
+;;   markdown-mode: marker time
+;;   rust-mode: for a happy crustacean (TODO: restic-mode?)
+;;   nix-mode: it is snowing! (TODO: nix-ts-mode)
+;;   code-cells: jupyter shenaningans, requires jupytext (https://github.com/astoff/code-cells.el)
+;;   beancount: counting beans
+;;   org-mode: magical unicorn
+;;   org-roam: progenitor of all madness
+;;   org-roam-ui, websocket: the main point of org-roam :)
+;;   evil-org-roam: evil unicorn
+;;   auctex: the golden standard of TeX editing (needs latexmk)
+;;   aas, laas: super fast autosnippets for latex and other stuff
+;;   pdf-tools: pdf-viewer of choice
+;;   auctex-cont-latexmk: automagically compile tex files via `auctex-cont-latexmk-mode'
+;;   evil-tex: evil integration for LaTeX (like vimtex)
+;; Yeah, these are kind of a mixed batch, maybe evil-org-roam should be in the
+;; Evil section instead, but it kind of just roamed here. As usual, LaTeX setup
+;; is inspired by 'https://castel.dev/' and 'https://karthinks.com/software/latex-input-for-impatient-scholars/'
 (use-package treesit
   :ensure nil
   :mode
@@ -967,8 +946,6 @@ If this is a daemon session, load them all immediately instead."
 	     (c++-mode . c++-ts-mode)
 	     (c-or-c++-mode . c-or-c++-ts-mode)))
     (add-to-list 'major-mode-remap-alist mapping)))
-;;
-;; I hate C
 (use-package c-ts-mode
   :ensure nil
   :general-config
@@ -984,8 +961,6 @@ If this is a daemon session, load them all immediately instead."
   ;; this breaks indentation style a little, but it should suffice for now
   (general-def 'insert 'c-ts-mode-map
     "RET" 'evil-ret-and-indent))
-;;;
-;;; For when I need markdown
 (use-package markdown-mode
   :mode "\\.md\\'"
   :hook (markdown-mode . visual-line-mode)
@@ -996,35 +971,16 @@ If this is a daemon session, load them all immediately instead."
 	markdown-enable-math t
 	markdown-open-command "xdg-open"
 	markdown-mouse-follow-link nil))
-;;;
-;;; Use rust-mode with treesitter integration 
-;;; TODO: restic-mode ?
 (use-package rust-mode
   :mode "\\.rs\\'"
   :config
   (setq rust-mode-treesitter-derive t))
-;;;
-;;; TODO: Move to nix-ts-mode evenutally
-(use-package nix-mode
-  :mode "\\.nix\\'")
-;;;
-;;; Rare times where I have to work with jupyter notebooks
-;;; https://github.com/astoff/code-cells.el
-(use-package code-cells
-  :mode ("\\.ipynb\\'" . code-cells-mode))
-;;;
-;;; Beancount, for counting beans...
+(use-package nix-mode :mode "\\.nix\\'")
+(use-package code-cells :mode ("\\.ipynb\\'" . code-cells-mode))
 (use-package beancount
   :mode ("\\.bean\\'" . beancount-mode)
   :hook ((beancount-mode . outline-minor-mode)
 	 (beancount-mode . flymake-bean-check-enable)))
-;;;
-;;
-;; |* Org
-;;
-;;; TODO: org-modern, it takes a while to get it looking good: font choice, color, etc
-;;;
-;;; Magical unicorn
 (use-package org
   :ensure nil
   :defer-incrementally
@@ -1125,8 +1081,6 @@ If this is a daemon session, load them all immediately instead."
 		    "r" '("org-mode refile" . org-refile)
 		    "t" '("org-mode tag" . org-set-tags-command)
 		    "e" '("org-mode effort" . org-set-effort)))
-;;;
-;;; org-roam, progenitor of all madness
 (use-package org-roam
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
@@ -1211,10 +1165,7 @@ If this is a daemon session, load them all immediately instead."
 	  ("i" "index note" plain "%?"
 	   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: index")
 	   :unnarrowed t))))
-;;;
-;;; org-roam-ui, the best ui for org and roaming about
-(use-package websocket
-  :after org-roam)
+(use-package websocket :after org-roam)
 (use-package org-roam-ui
   :after org-roam
   :commands (org-roam-ui-open)
@@ -1223,8 +1174,6 @@ If this is a daemon session, load them all immediately instead."
 	org-roam-ui-follow t
 	org-roam-ui-update-on-save t
 	org-roam-ui-open-on-start t))
-;;;
-;;; Evil unicorn
 (use-package evil-org
   :hook ((org-mode . evil-org-mode)
 	 (org-agenda-mode . evil-org-mode))
@@ -1232,18 +1181,6 @@ If this is a daemon session, load them all immediately instead."
   (evil-org-set-key-theme)
   (require 'evil-org-agenda)
   (evil-org-agenda-set-keys))
-;;;
-;;
-;; |* Latex
-;;
-;;; Moderately fast latex typesetting configuration. This relies on auctex per
-;;; usual along with pdf-tools for viewing and latexmk for compiling documents
-;;;
-;;; But we have some cool tricks using aas (and laas) for automatically
-;;; inserting snippets without pressing tab. As usual, inspired by this gem:
-;;; https://castel.dev/post/lecture-notes-1/
-;;;
-;;; Pretty symbols and general LaTeX-mode. I hated configuring this...
 (use-package auctex
   :mode ("\\.tex\\'" . latex-mode)
   :hook (TeX-mode . auto-fill-mode)
@@ -1358,8 +1295,6 @@ If this is a daemon session, load them all immediately instead."
     "a" '("latex auto-compile" . auctex-cont-latexmk-toggle)
     "c" '("latex compile" . compile-latex)
     "v" '("latex view" . TeX-view)))
-;;;
-;;; Viewing pdfs and more
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
   :config
@@ -1372,17 +1307,10 @@ If this is a daemon session, load them all immediately instead."
   (defun pdf-tools-hide-evil-cursor ()
       (set (make-local-variable 'evil-normal-state-cursor) (list nil)))
   (add-hook 'pdf-view-mode-hook #'pdf-tools-hide-evil-cursor))
-;;;
-;;; Automagically compile tex files. Enable via `auctex-cont-latexmk-mode'
-(use-package auctex-cont-latexmk
-  :commands (auctex-cont-latexmk-toggle))
-;;;
-;;; Automagically expand snippets without pressing <tab> or entering a space
+(use-package auctex-cont-latexmk :commands (auctex-cont-latexmk-toggle))
 (use-package aas
   :hook ((LaTeX-mode . aas-activate-for-major-mode)
 	 (org-mode . aas-activate-for-major-mode)))
-;;;
-;;; A collection of common snippets for use with aas
 (use-package laas
   :hook ((LaTeX-mode . laas-mode)
 	 (org-mode . laas-mode)
@@ -1511,21 +1439,24 @@ If this is a daemon session, load them all immediately instead."
     "lrb" '(tempel "\\left\\{ " p " \\right\\}" q)
     "lra" '(tempel "\\left\\langle " p " \\right\\rangle" q)
     "lrl" '(tempel "\\left| " p " \\right|" q)))
-;;;
-;;; Evil extensions for tex editing! Like the venerable vimtex
-;;; Note to self, this uses mt* to toggle environments and not ts*
-;;; which is probably better since t is used much more than m.
 (use-package evil-tex
   :after evil
   :hook (LaTeX-mode . evil-tex-mode))
-;;;
+
+;;;; Utilities
 ;;
-;; |* Utilities
-;;
-;;; Utilities, like spellchecking and other stuff
-;;;
-;;; Jinx, much faster alternative to flyspell which spells the end for my
-;;; buffers...
+;; Utilities, like spellchecking and other stuff. These are general purpose
+;; modules or just random cool gimmicks, no Tetris is not a gimmick by the way.
+;;   jinx: much faster alternative to flyspell which spells the end for my buffers
+;;   envrc: direnv (nix ball knowledge, well not really) integration
+;;   calfw: emacs calendar, well a blocky alternative one
+;;   calfw-org: add org events to calfw
+;;   apheleia: for formatting
+;;   flymake-shellcheck: flymake backend for 'sh-mode'
+;;   dashboard: a dashboard opened once and never again
+;;   elfeed: reading feeds in emacs, feeding reads in emacs
+;;   olivetti: nice, sleepy margins for reading text-based stuff
+;; TODO: (use-package calfw-blocks :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
 (use-package jinx
   ;; I pull this in using nix and not package.el
   :ensure nil
@@ -1537,11 +1468,7 @@ If this is a daemon session, load them all immediately instead."
   (general-def 'normal
     "]s" #'jinx-next
     "[s" #'jinx-previous))
-;;
-;; Direnv integration for emacs
 (use-package envrc :hook (on-first-file . envrc-global-mode))
-;;;
-;;; Calendar in emacs
 (use-package calfw
   :commands calfw-open-calendar-buffer
   :config
@@ -1579,34 +1506,17 @@ If this is a daemon session, load them all immediately instead."
     "W"   #'calfw-change-view-week)
   (general-def 'calfw-details-mode-map
     "q"   #'calfw-details-kill-buffer-command))
-;;;
-;;; org integration for calfw
 (use-package calfw-org
   :commands (calfw-org-open-calendar
              calfw-org-create-source
              calfw-org-create-file-source
              calfw-open-org-calendar-withkevin))
-;;;
-;;; Integrates org mode events with calfw
-(use-package calfw-org
-  :after calfw
-  :commands cfw:open-org-calendar)
-;;;
-;;; calfw time blocks
-;; (use-package calfw-blocks
-;;   :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
-;;;
-;;; Formatter
-;;; TODO: decide whether to enable globally
+(use-package calfw-org :commands cfw:open-org-calendar)
 (use-package apheleia)
-;;;
-;;; Flymake backends, mostly for linting
 (use-package flymake-shellcheck
   :hook ((sh-mode . flymake-shellcheck-load)
 	 (sh-mode . flymake-mode))
   :commands flymake-shellcheck-load)
-;;;
-;;; Dashboard, why not
 (use-package dashboard
   :demand t
   :config
@@ -1619,7 +1529,6 @@ If this is a daemon session, load them all immediately instead."
   (setq dashboard-show-shortcuts nil)
   (setq dashboard-set-footer nil))
 ;;;
-;;; Reading feeds in emacs, feeding reads in emacs
 (use-package elfeed
   :commands elfeed
   :init
@@ -1645,13 +1554,7 @@ If this is a daemon session, load them all immediately instead."
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
 	  ("https://mcyoung.xyz/feed.xml" optimization))))
-;;;
-;;; Nice margins for reading text-based stuff
-(use-package olivetti
-  :general
-  (leader-keys "oz" '("open zen" . olivetti-mode)))
-;;;
-;;; 
+(use-package olivetti :general (leader-keys "oz" '("open zen" . olivetti-mode)))
 ;; (use-package nano-calendar
 ;;   :vc (:url "https://github.com/rougier/nano-calendar.git" :rev :newest)
 ;;   :commands (nano-calendar)
@@ -1668,4 +1571,6 @@ If this is a daemon session, load them all immediately instead."
 ;;     "."   #'nano-calendar-goto-today
 ;;     "q"   #'nano-calendar-quit
 ;;     "RET" #'nano-calendar-goto-org-agenda))
-;;; End of the init file
+
+
+;;;; End of the init file
