@@ -657,7 +657,6 @@ If this is a daemon session, load them all immediately instead."
   (setq vertico-count 15
 	vertico-resize nil)
   (general-def 'vertico-map
-    "C-SPC" #'+vertico/embark-preview
     "C-M-n" #'vertico-next-group
     "C-M-p" #'vertico-previous-group))
 (use-package marginalia :hook (on-first-input . marginalia-mode))
@@ -678,27 +677,32 @@ If this is a daemon session, load them all immediately instead."
   :after-call on-first-input-hook
   :config
   (setq completion-styles '(orderless basic))
-  (setq completion-category-overrides '((file (styles basic partial-completion)))))
+  (setq completion-category-overrides '((file (styles partial-completion))))
+  (setq completion-pcm-leading-wildcard t))
 (use-package corfu
-  :hook (on-first-input . global-corfu-mode)
+  :hook ((on-first-input . global-corfu-mode)
+	 (corfu-mode . corfu-popupinfo-mode)
+	 (corfu-mode . completion-preview-mode)
+	 (corfu-mode . corfu-history-mode))
   :config
-  (setq corfu-preview-current 'insert
-	corfu-popupinfo-mode t
-	corfu-auto t
-	corfu-auto-delay 0.25
-	corfu-auto-prefix 2
-	corfu-cycle nil
-	corfu-preselect-first t
-	completion-cycle-threshold nil))
+  (setq corfu-cycle t                   ;; Enable cycling
+	corfu-auto nil                  ;; Don't autoshow popup
+	corfu-auto-prefix 2             ;; Type at least two letters to enable autocompletion
+	completion-cycle-threshold nil  ;; Show all matches
+	corfu-auto-delay 0.25           ;; Delay until autocomplete starts
+	corfu-preselect 'prompt
+	corfu-preview-current 'insert)
+  (setq completion-preview-sort-function corfu-sort-function))
 (use-package nerd-icons-corfu
   :after-call global-corfu-mode
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 (use-package cape
-  :after-call global-corfu-mode
-  :config
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file))
+  :hook ((prog-mode text-mode conf-mode commint-mode eshell-mode sh-mode bash-ts-mode) . set-default-capf)
+  :init
+  (defun set-default-capf()
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
 (use-package avy
   :after evil
   :general
@@ -870,7 +874,7 @@ If this is a daemon session, load them all immediately instead."
   (add-to-list 'tempel-user-elements #'tempel-repeat)
   ;; Integrate snippets with completion
   (defun tempel-setup-capf ()
-    (add-hook 'completion-at-point-functions #'tempel-expand -1 'local))
+    (add-to-list 'completion-at-point-functions #'tempel-expand -1 'local))
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
 
