@@ -47,8 +47,6 @@
       use-package-always-ensure t)
 (with-eval-after-load 'package (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
 
-
-
 ;;;; Doomemacs
 ;;
 ;; From doomemacs, adds :defer-incremental and :after-call to use-package
@@ -256,11 +254,7 @@ If this is a daemon session, load them all immediately instead."
 
   ;; No blinking cursor. Also set highlighted cursor line
   (blink-cursor-mode -1)
-  (global-hl-line-mode 1)
-
-  ;; From Doom, this saves some space when using splits
-  (setq window-divider-default-places t
-	window-divider-default-bottom-width 1
+  (setq window-divider-default-bottom-width 1
 	window-divider-default-right-width 1)
   (add-hook 'on-init-ui-hook #'window-divider-mode)
 
@@ -357,6 +351,12 @@ If this is a daemon session, load them all immediately instead."
   (set-face-background 'mode-line-active "#1d1c19")
   (set-face-background 'mode-line-inactive "#1d1c19")
 
+  ;; TODO: generalize this
+  (dolist (face '(window-divider
+		  window-divider-first-pixel
+		  window-divider-last-pixel))
+    (set-face-attribute face nil :foreground "#181616"))
+
   (with-eval-after-load 'diff-hl
     (set-face-attribute 'diff-hl-insert nil :foreground "#87a987" :background "unspecified")
     (set-face-attribute 'diff-hl-change nil :foreground "#e6c384" :background "unspecified")
@@ -373,6 +373,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   flymake: making things on the fly
 ;;   recentf: recent files for recent stuff
 ;;   tab-bar: keeping tabs on projects (not buffers)
+;;   saveplace, savehist: open to last location and persist minibuffer history
+;;   hl-line: highlight the current line... that is it
 ;; Changes should be fairly minimal if possible
 (use-package which-key
   :ensure nil
@@ -446,6 +448,9 @@ If this is a daemon session, load them all immediately instead."
   :ensure nil
   :hook (on-first-file . savehist-mode))
 
+(use-package hl-line
+  :ensure nil
+  :hook (on-first-buffer . global-hl-line-mode))
 ;;;; Evil
 ;;
 ;; Vim emulation via evil, cause life isn't fun without being evil.
@@ -461,6 +466,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   evil-textobj-anyblock: block textobjs and look ahead for them
 ;;   doom-modeline: modeline
 ;;   anzu and evil anzu: anzu, shows search results, used by 'doom-modeline'
+;;   better-jumper: more predictable jumping
 ;; Evil is a constant battle between emacs and evil.
 (use-package evil
   ;; This is risky, we have to ensure evil is loaded before other modules
@@ -631,6 +637,11 @@ If this is a daemon session, load them all immediately instead."
   (global-anzu-mode +1)
   (require 'evil-anzu))
 
+(use-package better-jumper
+  :hook (on-first-input . better-jumper-mode)
+  :init
+  (global-set-key [remap evil-jump-forward]  #'better-jumper-jump-forward)
+  (global-set-key [remap evil-jump-backward] #'better-jumper-jump-backward))
 ;;;; Editor
 ;;
 ;; Important packages for editing, this is the usual "modern" stack:
@@ -644,6 +655,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   orderless: searching by using matched components separated by space in any order (TODO: orderless-flex?)
 ;;   avy: jumping around (like vim-sneak, vim-easymotion, and co.)
 ;;   wgrep: slick search and replace
+;;   vundo: visual undo
 ;; Editing is a hard job
 (use-package consult
   :general
@@ -714,6 +726,7 @@ If this is a daemon session, load them all immediately instead."
   :commands wgrep-change-to-wgrep-mode
   :config
   (setq wgrep-auto-save-buffer t))
+(use-package vundo :commands (vundo))
 
 ;;;; Development
 ;;
@@ -874,7 +887,8 @@ If this is a daemon session, load them all immediately instead."
   (add-to-list 'tempel-user-elements #'tempel-repeat)
   ;; Integrate snippets with completion
   (defun tempel-setup-capf ()
-    (add-to-list 'completion-at-point-functions #'tempel-expand -1 'local))
+    (setq-local completion-at-point-functions
+		(cons #'tempel-expand completion-at-point-functions)))
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
 
