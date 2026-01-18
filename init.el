@@ -201,7 +201,14 @@ If this is a daemon session, load them all immediately instead."
   :ensure nil
   :demand t
   :init
-  (setq-default fill-column 80)
+  (setq-default fill-column 80
+		;; Wrap presevers words
+		word-wrap t
+		;; Truncate lines by default, enable 'visual-line-mode' for wrapping
+		truncate-lines t)
+  ;; Default wrap in 'text-mode'
+  (add-hook 'text-mode-hook #'visual-line-mode)
+
   ;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
   (setq idle-update-delay 1)
   ;; Fonts
@@ -240,9 +247,14 @@ If this is a daemon session, load them all immediately instead."
 
 	;; Don't render stuff in inactive windows, distracting...
 	cursor-in-non-selected-windows nil
-	highlight-nonselected-windows nil)
+	highlight-nonselected-windows nil
 
-  ;; TODO: saveplace-mode and save-hist-mode
+	;; Answer yes-no-prompts using just y or n
+	use-short-answers t)
+  ;; Don't map space to yes for the prompt
+  (define-key y-or-n-p-map " " nil)
+
+  ;; No blinking cursor. Also set highlighted cursor line
   (blink-cursor-mode -1)
   (global-hl-line-mode 1)
 
@@ -252,16 +264,11 @@ If this is a daemon session, load them all immediately instead."
 	window-divider-default-right-width 1)
   (add-hook 'on-init-ui-hook #'window-divider-mode)
 
-  ;; Truncate lines instead of wrapping when in prog mode, but wrap
-  ;; lines in text like formats (like latex and regular text)
-  (add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
-  (add-hook 'text-mode-hook #'visual-line-mode)
-
   ;; Set encoding
   (set-language-environment "UTF-8")
   (setq default-input-method nil)
-  ;; Completion menus (vertico and corfu)
 
+  ;; Completion menus (vertico and corfu)
   ;; For corfu, note that 'complete removes inserting tabs... a hefty price
   ;; But you can still indent so it is fine: indent with tabs align with spaces
   (setq tab-always-indent 'complete
@@ -280,6 +287,7 @@ If this is a daemon session, load them all immediately instead."
 
   ;; Properly deletes tabs
   (setq backward-delete-char-untabify-method nil)
+
   ;; Performance!!!!!!
   ;; Most of these were pilfered from Doom. Not really needed, disabling saves
   ;; some time.
@@ -290,7 +298,7 @@ If this is a daemon session, load them all immediately instead."
 		bidi-paragraph-direction 'left-to-right)
   ;; Helps with scrolling performance
   (setq redisplay-skip-fontification-on-input t)
-  ;;
+
   ;; I actually have no idea how to work this
   (setq display-buffer-alist
 	'(
@@ -310,7 +318,6 @@ If this is a daemon session, load them all immediately instead."
 	   (side . right)
 	   (slot . 1)))))
 
-;;;;
 ;;;; General
 ;;
 ;; Use general for keybindings. As recommended, :general is used for
@@ -432,6 +439,13 @@ If this is a daemon session, load them all immediately instead."
   (add-to-list 'tab-bar-format 'tab-bar-icon)
   (add-to-list 'tab-bar-format 'tab-bar-top-pad t))
 
+(use-package saveplace
+  :ensure nil
+  :hook (on-first-file . save-place-mode))
+(use-package savehist
+  :ensure nil
+  :hook (on-first-file . savehist-mode))
+
 ;;;; Evil
 ;;
 ;; Vim emulation via evil, cause life isn't fun without being evil.
@@ -503,8 +517,8 @@ If this is a daemon session, load them all immediately instead."
   (general-def 'insert
     ;; Enter normal mode by entering jk while in insert mode
     "j" (general-key-dispatch 'self-insert-command :timeout 0.25 "k" #'evil-normal-state)
-    ;; Paste in insert mode via Ctrl-Shift-v
-    "C-r" #'evil-paste-from-register
+    ;; Paste in insert mode via Ctrl-v (it is normally not too useful)
+    "C-v" #'evil-paste-from-register
     ;; Overloaded tabbing
     "<tab>"     #'smarttab
     "<backtab>" #'smartshifttab)
@@ -1573,4 +1587,5 @@ If this is a daemon session, load them all immediately instead."
 ;;     "RET" #'nano-calendar-goto-org-agenda))
 
 
+(use-package hl-todo :hook (prog-mode . hl-todo-mode))
 ;;;; End of the init file
