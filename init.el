@@ -190,113 +190,117 @@ If this is a daemon session, load them all immediately instead."
          (use-package-process-keywords name rest state))))))
 ;;;
 ;;; Nice defaults
-(setq-default fill-column 80)
+(use-package emacs
+  :ensure nil
+  :demand t
+  :init
+  (setq-default fill-column 80)
 ;;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
-(setq idle-update-delay 1)
-(setq use-file-dialog nil
-      tab-bar-new-button ""
-      tab-bar-close-button-show nil
-      tab-bar-back-button ""
-      tab-bar-auto-width nil
-      tab-bar-separator "    "
-      ;; I find these clunky to use, and backups of the files themselves can be
-      ;; potentially dangerous to have floating around.
-      make-backup-files nil
-      create-lockfiles nil
-      ;; No need to have duplicates...
-      kill-do-not-save-duplicates t
-      ;; Vertical splits over horizontal ones
-      split-width-threshold nil
-      split-height-threshold 160)
-;; TODO: saveplace-mode and save-hist-mode
-(setq native-comp-async-report-warnings-errors nil)
-(blink-cursor-mode -1)
-(global-hl-line-mode 1)
-;;
-;; From Doom, this saves some space when using splits
-(setq window-divider-default-places t
-      window-divider-default-bottom-width 1
-      window-divider-default-right-width 1)
-(add-hook 'on-init-ui-hook #'window-divider-mode)
-;;
-;; Truncate lines instead of wrapping when in prog mode, but wrap
-;; lines in text like formats (like latex and regular text)
-(add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
-(add-hook 'text-mode-hook #'visual-line-mode)
-;;
-;; Set encoding
-(set-language-environment "UTF-8")
-(setq default-input-method nil)
-;;
-;; Don't render stuff in inactive windows, distracting...
-(setq cursor-in-non-selected-windows nil
-      highlight-nonselected-windows nil)
-;;
-;; Scrolling
-(setq scroll-step 1
-      auto-window-vscroll nil
-      ;; scroll off
-      scroll-margin 7)
-;; For corfu, note that 'complete removes inserting tabs... a hefty price
-;; But you can still indent so it is fine: indent with tabs align with spaces
-(setq tab-always-indent 'complete
-      text-mode-ispell-word-completion nil)
-;;
-;; Recommend by vertico and good defaults too
-;; 
-;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
-;; to switch display modes.
-(setq context-menu-mode t)
-;; Support opening new minibuffers from inside existing minibuffers.
-(setq enable-recursive-minibuffers t)
-;;
-;; Hide commands in M-x which do not work in the current mode.  Vertico
-;; commands are hidden in normal buffers. This setting is useful beyond
-;; Vertico.
-(setq read-extended-command-predicate #'command-completion-default-include-p)
-;;
-;; Do not allow the cursor in the minibuffer prompt
-(setq minibuffer-prompt-properties
-      '(read-only t cursor-intangible t face minibuffer-prompt))
-;;
-;; Properly deletes tabs
-(setq backward-delete-char-untabify-method nil)
-;;
-;; Font
-(add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
-;;
-;; Move custom stuff elsewhere and don't load them, I prefer
-;; customizing through code. This cause problems down the road...
-(setq custom-file "~/.config/emacs/custom.el")
-;;
-;; Performance!!!!!! Most of these were pilfered from Doom.
-;; Not really needed, disabling saves some time.
-(setq auto-mode-case-fold nil)
-;; Don't really use these so setting these should be fine
-(setq-default bidi-display-reordering 'left-to-right
-              bidi-paragraph-direction 'left-to-right)
-(setq bidi-inhibit-bpa t)
-;; Helps with scrolling performance
-(setq redisplay-skip-fontification-on-input t)
-;;
-;; I actually have no idea how to work this
-(setq display-buffer-alist
-      '(
-	;; Make warnings, logs, and erros open on the bottom
-	("\\*\\(?:Warnings\\|Compile-Log\\|Flymake diagnostics.*\\)\\*"
-	 (display-buffer-in-side-window)
-	 (window-height . 0.30)
-	 (side . bottom)
-	 (direction . below)
-	 (slot . -1)
-	 (window-parameters . ((split-window . #'ignore))))
-	;; Preview pdfs in the sidebar
-	;; ("\\.pdf\\'"
-	((major-mode . pdf-view-mode)
-	 (display-buffer-reuse-mode-window display-buffer-in-side-window)
-	 (window-width . 0.45)
-	 (side . right)
-	 (slot . 1))))
+  (setq idle-update-delay 1)
+  (setq use-file-dialog nil
+	tab-bar-new-button ""
+	tab-bar-close-button-show nil
+	tab-bar-back-button ""
+	tab-bar-auto-width nil
+	tab-bar-separator "    "
+	;; I find these clunky to use, and backups of the files themselves can be
+	;; potentially dangerous to have floating around.
+	make-backup-files nil
+	create-lockfiles nil
+	;; No need to have duplicates...
+	kill-do-not-save-duplicates t
+	;; Vertical splits over horizontal ones
+	split-width-threshold nil
+	split-height-threshold 160)
+  ;; TODO: saveplace-mode and save-hist-mode
+  (setq native-comp-async-report-warnings-errors nil)
+  (blink-cursor-mode -1)
+  (global-hl-line-mode 1)
+  ;;
+  ;; From Doom, this saves some space when using splits
+  (setq window-divider-default-places t
+	window-divider-default-bottom-width 1
+	window-divider-default-right-width 1)
+  (add-hook 'on-init-ui-hook #'window-divider-mode)
+  ;;
+  ;; Truncate lines instead of wrapping when in prog mode, but wrap
+  ;; lines in text like formats (like latex and regular text)
+  (add-hook 'prog-mode-hook (lambda() (setq truncate-lines t)))
+  (add-hook 'text-mode-hook #'visual-line-mode)
+  ;;
+  ;; Set encoding
+  (set-language-environment "UTF-8")
+  (setq default-input-method nil)
+  ;;
+  ;; Don't render stuff in inactive windows, distracting...
+  (setq cursor-in-non-selected-windows nil
+	highlight-nonselected-windows nil)
+  ;;
+  ;; Scrolling
+  (setq scroll-step 1
+	auto-window-vscroll nil
+	;; scroll off
+	scroll-margin 7)
+  ;; For corfu, note that 'complete removes inserting tabs... a hefty price
+  ;; But you can still indent so it is fine: indent with tabs align with spaces
+  (setq tab-always-indent 'complete
+	text-mode-ispell-word-completion nil)
+  ;;
+  ;; Recommend by vertico and good defaults too
+  ;; 
+  ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
+  ;; to switch display modes.
+  (setq context-menu-mode t)
+  ;; Support opening new minibuffers from inside existing minibuffers.
+  (setq enable-recursive-minibuffers t)
+  ;;
+  ;; Hide commands in M-x which do not work in the current mode.  Vertico
+  ;; commands are hidden in normal buffers. This setting is useful beyond
+  ;; Vertico.
+  (setq read-extended-command-predicate #'command-completion-default-include-p)
+  ;;
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+	'(read-only t cursor-intangible t face minibuffer-prompt))
+  ;;
+  ;; Properly deletes tabs
+  (setq backward-delete-char-untabify-method nil)
+  ;;
+  ;; Font
+  (add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
+  ;;
+  ;; Move custom stuff elsewhere and don't load them, I prefer
+  ;; customizing through code. This cause problems down the road...
+  (setq custom-file "~/.config/emacs/custom.el")
+  ;;
+  ;; Performance!!!!!! Most of these were pilfered from Doom.
+  ;; Not really needed, disabling saves some time.
+  (setq auto-mode-case-fold nil)
+  ;; Don't really use these so setting these should be fine
+  (setq-default bidi-display-reordering 'left-to-right
+		bidi-paragraph-direction 'left-to-right)
+  (setq bidi-inhibit-bpa t)
+  ;; Helps with scrolling performance
+  (setq redisplay-skip-fontification-on-input t)
+  ;;
+  ;; I actually have no idea how to work this
+  (setq display-buffer-alist
+	'(
+	  ;; Make warnings, logs, and erros open on the bottom
+	  ("\\*\\(?:Warnings\\|Compile-Log\\|Flymake diagnostics.*\\)\\*"
+	   (display-buffer-in-side-window)
+	   (window-height . 0.30)
+	   (side . bottom)
+	   (direction . below)
+	   (slot . -1)
+	   (window-parameters . ((split-window . #'ignore))))
+	  ;; Preview pdfs in the sidebar
+	  ;; ("\\.pdf\\'"
+	  ((major-mode . pdf-view-mode)
+	   (display-buffer-reuse-mode-window display-buffer-in-side-window)
+	   (window-width . 0.45)
+	   (side . right)
+	   (slot . 1)))))
 ;;;
 ;;
 ;; |* Startup
@@ -1598,7 +1602,8 @@ If this is a daemon session, load them all immediately instead."
 ;;;
 ;;; Flymake backends, mostly for linting
 (use-package flymake-shellcheck
-  :hook (sh-mode . flymake-shellcheck-load)
+  :hook ((sh-mode . flymake-shellcheck-load)
+	 (sh-mode . flymake-mode))
   :commands flymake-shellcheck-load)
 ;;;
 ;;; Dashboard, why not
