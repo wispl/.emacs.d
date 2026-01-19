@@ -375,6 +375,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   tab-bar: keeping tabs on projects (not buffers)
 ;;   saveplace, savehist: open to last location and persist minibuffer history
 ;;   hl-line: highlight the current line... that is it
+;;   tramp: edit files remotely like a wizard
 ;; Changes should be fairly minimal if possible
 (use-package which-key
   :ensure nil
@@ -451,6 +452,79 @@ If this is a daemon session, load them all immediately instead."
 (use-package hl-line
   :ensure nil
   :hook (on-first-buffer . global-hl-line-mode))
+(use-package tramp-perf
+  :ensure nil
+  :after tramp
+  ;; Most of these are from https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+  ;; Use scp directly for file copying and prevent tramp from littering files
+  ;; TODO: switch over to rysnc eventually
+  :config
+  (setq remote-file-name-inhibit-locks t
+	tramp-use-scp-direct-remote-copying t
+	remote-file-name-inhibit-auto-save-visited t)
+  ;; Overall best value according to the blog
+  (setq tramp-copy-size-limit (* 1024 1024) ;; 1MB
+	tramp-verbose 2)
+  ;; Use direct async processes for performance and speed
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "scp")
+   'remote-direct-async-process)
+  ;; Tramp can use SSH connection sharing for faster connections. However
+  ;; 'compile' disables that for some reason so we tell tramp to turn it back on
+  (with-eval-after-load 'compile
+    (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options))
+  ;; TODO: incoporate these somehow
+  ;; (remove-hook 'evil-insert-state-exit-hook #'doom-modeline-update-buffer-file-name)
+  ;; (remove-hook 'find-file-hook #'doom-modeline-update-buffer-file-name)
+  ;; (remove-hook 'find-file-hook 'forge-bug-reference-setup)
+
+  ;; Cache as much values as possible
+  (defun memoize-remote (key cache orig-fn &rest args)
+    "Memoize a value if the key is a remote path."
+    (if (and key
+	     (file-remote-p key))
+	(if-let ((current (assoc key (symbol-value cache))))
+	    (cdr current)
+	  (let ((current (apply orig-fn args)))
+	    (set cache (cons (cons key current) (symbol-value cache)))
+	    current))
+      (apply orig-fn args)))
+  ;; Memoize current project
+  (defvar project-current-cache nil)
+  (defun memoize-project-current (orig &optional prompt directory)
+    (memoize-remote (or directory
+			project-current-directory-override
+			default-directory)
+		    'project-current-cache orig prompt directory))
+
+  (advice-add 'project-current :around #'memoize-project-current)
+
+  ;; Memoize magit top level
+  (defvar magit-toplevel-cache nil)
+  (defun memoize-magit-toplevel (orig &optional directory)
+    (memoize-remote (or directory default-directory)
+                    'magit-toplevel-cache orig directory))
+  (advice-add 'magit-toplevel :around #'memoize-magit-toplevel)
+
+  ;; memoize vc-git-root
+  (defvar vc-git-root-cache nil)
+  (defun memoize-vc-git-root (orig file)
+    (let ((value (memoize-remote (file-name-directory file) 'vc-git-root-cache orig file)))
+      ;; sometimes vc-git-root returns nil even when there is a root there
+      (when (null (cdr (car vc-git-root-cache)))
+	(setq vc-git-root-cache (cdr vc-git-root-cache)))
+      value))
+  (advice-add 'vc-git-root :around #'memoize-vc-git-root)
+
+  ;; memoize all git candidates in the current project
+  (defvar $counsel-git-cands-cache nil)
+  (defun $memoize-counsel-git-cands (orig dir)
+    ($memoize-remote (magit-toplevel dir) '$counsel-git-cands-cache orig dir))
+  (advice-add 'counsel-git-cands :around #'$memoize-counsel-git-cands))
+
 ;;;; Evil
 ;;
 ;; Vim emulation via evil, cause life isn't fun without being evil.
