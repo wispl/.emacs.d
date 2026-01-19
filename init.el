@@ -1488,6 +1488,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   dashboard: a dashboard opened once and never again
 ;;   elfeed: reading feeds in emacs, feeding reads in emacs
 ;;   olivetti: nice, sleepy margins for reading text-based stuff
+;;   emacs-everywhere: its always with you, like a puppy dog 
 ;; TODO: (use-package calfw-blocks :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
 (use-package jinx
   ;; I pull this in using nix and not package.el
@@ -1560,7 +1561,6 @@ If this is a daemon session, load them all immediately instead."
   (setq dashboard-vertically-center-content t)
   (setq dashboard-show-shortcuts nil)
   (setq dashboard-set-footer nil))
-;;;
 (use-package elfeed
   :commands elfeed
   :init
@@ -1606,4 +1606,36 @@ If this is a daemon session, load them all immediately instead."
 
 
 (use-package hl-todo :hook (prog-mode . hl-todo-mode))
+(use-package emacs-everywhere
+  :defer t
+  :config
+  (defun emacs-everywhere--app-info-linux-niri ()
+    "Return information on the current active window, on a Linux Niri session."
+    (require 'json)
+    (let*
+	((json-raw (emacs-everywhere--call "niri" "msg" "-j" "focused-window"))
+	 (is-err (string-prefix-p "Error" json-raw)))
+      (if is-err
+	  (progn
+	    (message "[emacs-everywhere] %s" json-raw)
+	    (message "[emacs-everywhere] NIRI_SOCKET=%s" (getenv "NIRI_SOCKET"))
+	    (error "[emacs-everywhere] Error in `niri msg -j focused-window' (see *messages*)"))
+	(let*
+	    ((json (json-read-from-string json-raw)) ;; -j for json
+	     (wid (cdr (assq 'id json)))
+	     (window-id (if (numberp wid) (number-to-string wid) wid))
+	     (window-title (cdr (assq 'title json)))
+	     (app-name (cdr (assq 'app_id json)))
+	     (window-geometry nil)) ;; no geometry in niri
+	  (make-emacs-everywhere-app
+	   :id window-id
+	   :class app-name
+	   :title window-title
+	   :geometry window-geometry))
+	)))
+  (setq emacs-everywhere-system-configs
+	(append emacs-everywhere-system-configs
+		'(((wayland . niri)
+		   :focus-command ("niri" "msg" "action" "focus-window" "--id" "%w")
+		   :info-function emacs-everywhere--app-info-linux-niri)))))
 ;;;; End of the init file
