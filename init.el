@@ -648,8 +648,11 @@ If this is a daemon session, load them all immediately instead."
     "<tab>" '("find tabs" . tab-bar-select-tab-by-name)
     "SPC"   '("alt buffer" . evil-switch-to-windows-last-buffer)
     "f"     '("files" . find-file)
-    "xb"     '("kill buffer" . kill-current-buffer)
-    "xt"     '("kill tab" . tab-close)
+    "xb"    '("kill buffer" . kill-current-buffer)
+    "xt"    '("kill tab" . tab-close)
+    "xm"    '("kill bookmark" . bookmark-delete)
+    "ct"    '("create tab" . tab-new)
+    "cm"    '("create bookmark" . bookmark-set)
     "pa"    '("project alternate" . ff-find-other-file)
     "hm"    '("help mode" . describe-mode)
     "hv"    '("help variable" . describe-variable)
@@ -720,6 +723,7 @@ If this is a daemon session, load them all immediately instead."
 ;;
 ;; Important packages for editing, this is the usual "modern" stack:
 ;;   consult: provides lots of goodies for searching and jumping
+;;   consult-dir: provides dir completion for consult
 ;;   vertico: verical completion buffer in the mini-buffer
 ;;   marginalia: provides annotation (tiny bits of information) on the sides for vertico
 ;;   corfu, nerd-icons-corfu: completion
@@ -734,9 +738,17 @@ If this is a daemon session, load them all immediately instead."
 (use-package consult
   :general
   (leader-keys
+    "RET" '("bookmark" . consult-bookmark)
     "/" '("search" . consult-line)
     "g" '("grep" . consult-ripgrep)
     "b" '("buffer" . consult-buffer)))
+(use-package consult-dir
+  :init
+  (global-set-key [remap list-directory]  #'consult-dir)
+  :general
+  (general-def 'vertic-map
+   ("C-x C-d" . consult-dir)
+   ("C-x C-j" . consult-dir-jump-file)))
 (use-package vertico
   :hook (on-first-input . vertico-mode)
   :config
@@ -1116,17 +1128,19 @@ If this is a daemon session, load them all immediately instead."
   :init
   (defun org-init ()
     ;; Set some nice settings
-    (setq org-auto-align-tags nil
+    (setq org-startup-indented t
 	  ;; put tags after the heading, complements with no tag alignment
+	  ;; this is for performance in large org files
+	  org-auto-align-tags nil
 	  org-tags-column 0
+	  ;; don't show inbox or calfeed tag, not really important
+	  org-agenda-hide-tags-regexp "inbox\\|calfeed"
 	  ;; catch and show errors
 	  org-catch-invisible-edits 'show-and-error
 	  org-insert-heading-respect-content t
 	  ;; prettify
 	  org-hide-emphasis-markers t
 	  org-pretty-entities t
-	  ;; ditto for agenda
-	  org-agenda-tags-column 0
 	  ;; show diary entries (birthdays, anniversities) in agenda
 	  org-agenda-include-diary t)
     ;; Create some org files,
@@ -1135,7 +1149,8 @@ If this is a daemon session, load them all immediately instead."
     ;;   agenda.org is where reoccuring tasks or tasks with a time interval go
     ;; So captured -> inbox.org -> todo.org
     (setq org-directory "~/org/"
-          org-agenda-files '("agenda.org" "inbox.org" "todo.org"))
+          org-agenda-files '("agenda.org" "inbox.org" "todo.org" "calfeed.org")
+	  org-stuck-projects '("+COOKIE_DATA=\"todo recursive\"/-DONE" ("NEXT") nil ""))
     ;; Refiling
     ;; Everything expect for meetings gets forwarded to my inbox where I refile
     ;; them later, usually at the end of the day
@@ -1145,16 +1160,34 @@ If this is a daemon session, load them all immediately instead."
 	    ("q" "quick" entry (file "inbox.org")
 	     "* NEXT %?\n%U")
 	    ("n" "note" entry (file "inbox.org")
-	     "* %? :note:\n%U\n%a")
+	     "* %? :note:\n%U")
 	    ("m" "meeting" entry (file+headline "agenda.org" "Future")
-	     "* %?\n<%<%Y-%m-%d %H:00>>")))
+	     "* MEETING: %?\nSCHEDULED: <%<%Y-%m-%d %H:00>>")))
+    ;; Tags
+    ;;   Reading is for books or articles
+    ;;   Resource is for something I need to continuously refer back to
+    ;;   Tuning is QoL for me
+    ;;   Note is for notes, like tid bits of cool information
+    ;;   Hobby is well, hobbies
+    ;;   Code is something code related
+    ;;   Aerospace is something aerospace related
+    ;;   Flagged is something which I need to get done quick
+    (setq org-tag-alist (quote (("reading" . r)
+				("resource" . R)
+				("tuning" . t)
+				("note" . t)
+				("hobby" . h)
+				("code" . c)
+				("aerospace" . a)
+				("FLAGGED" . f))))
     ;; Refiling
-    (setq org-refile-targets '(("todo.org" :maxlevel . 1)))
+    (setq org-refile-targets '(("todo.org" :maxlevel . 3)))
     (setq org-refile-use-outline-path 'file)
     (setq org-outline-path-complete-in-steps nil)
     ;; Todo state
     (setq org-todo-keywords
-	  '((sequence "TODO(t)" "NEXT(n)" "HOLD(h)" "|" "DONE(d)")))
+	  '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+	    (sequence "HOLD(h)" "|" "CANCELLED(c)")))
     ;; Agenda customizations
     ;; Remove separator horizontal lines
     (setq org-agenda-block-separator nil)
@@ -1162,20 +1195,30 @@ If this is a daemon session, load them all immediately instead."
     (setq org-log-done 'time)
     ;; Custom version of `n' where NEXT, TODO, and DONE are separated
     (setq org-agenda-custom-commands
-	  '(("n" "my agenda"
+	  '(("n" "main agenda"
 	     ((agenda ""
 		      ((org-agenda-span 'day)
+		       (org-deadline-warning-days 14)
+		       (org-deadline-past-days 1)
 		       (org-agenda-time-grid '((daily) (800 1000 1200 1400 1600 1800 2000) "......" "---------------"))
 		       (org-agenda-current-time-string "--- < now > ---")))
+	      (tags "inbox"
+		    ((org-agenda-prefix-format " %i %-12:c%?-12t% s")
+		     (org-agenda-overriding-header "\nInbox (You should refile these, like right now):")))
+	      (stuck ""
+		    ((org-agenda-prefix-format " %i %-12:c%?-12t% s")
+		     (org-agenda-overriding-header "Stuck Projects (Get these moving by assigning a task NEXT):")))
 	      (todo "NEXT"
-		    ((org-agenda-prefix-format "  %i %-12:c[%e] ")
-		     (org-agenda-overriding-header "\nNext")))
-	      (todo "TODO"
-			 ((org-agenda-prefix-format "  %i %-12:c%?-12t% s")
-			  (org-agenda-overriding-header "\nTodo")))
-	      (tags "CLOSED>=\"<today>\""
-		    ((org-agenda-prefix-format "  %i %?-12t% s")
-		     (org-agenda-overriding-header "\nDone"))))))))
+		    ((org-agenda-prefix-format " %i %-11:c[%e] ")
+		     (org-agenda-overriding-header "Next (Do these when you have time):")))
+	      (tags-todo "-inbox/!-HOLD-NEXT"
+		    ((org-agenda-prefix-format " %i %-12:c%?-12t% s")
+		     ;; Skip project tasks
+		     (org-agenda-skip-function '(org-agenda-skip-subtree-if 'regexp "\[[0-9]+\/[0-9]+\]"))
+		     (org-agenda-overriding-header "Todo (Do these when you are being a lazy bum):")))
+	      (todo "HOLD"
+		    ((org-agenda-prefix-format " %i %-12:c%?-12t% s")
+		     (org-agenda-overriding-header "\nHold (Check on these occasionally):"))))))))
   (add-hook 'org-load-hook #'org-init)
   :config
   ;; Auto save after refiling
@@ -1183,22 +1226,31 @@ If this is a daemon session, load them all immediately instead."
         (lambda (&rest _)
           (org-save-all-org-buffers)))
   (general-def 'normal 'org-mode-map "RET" #'org-open-at-point)
+  (defun make-org-project()
+    (interactive)
+    (when (not (string-match "\\[[0-9]*/[0-9]*\\]" (thing-at-point 'line t)))
+      (org-set-property "COOKIE_DATA" "todo recursive")
+      (save-excursion
+	(end-of-line)
+	(insert " [/]")
+	(org-update-statistics-cookies nil))))
   (localleader-keys 'org-mode-map
-		    "r" '("org-mode refile" . org-refile)
-		    "t" '("org-mode tag" . org-set-tags-command)
-		    "e" '("org-mode effort" . org-set-effort)))
+		    "r" '("org refile" . org-refile)
+		    "t" '("org tag" . org-set-tags-command)
+		    "e" '("org effort" . org-set-effort)
+		    "p" '("org make project" . make-org-project)))
 (use-package org-roam
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
   :general-config
   ;; make sure these do not conflict with the ones above
   (localleader-keys 'org-mode-map
-    "f" '("roam find" . #'org-roam-node-find)
-    "F" '("roam find ref" . #'org-roam-ref-find)
-    "i" '("roam insert" . #'org-roam-node-insert)
-    "I" '("roam id create" . #'org-id-get-create)
-    "b" '("roam backlinks" . #'org-roam-buffer-toggle)
-    "R" '("roam refile" . #'org-roam-refile))
+    "f" '("roam find" . org-roam-node-find)
+    "F" '("roam find ref" . org-roam-ref-find)
+    "i" '("roam insert" . org-roam-node-insert)
+    "I" '("roam id create" . org-id-get-create)
+    "b" '("roam backlinks" . org-roam-buffer-toggle)
+    "R" '("roam refile" . org-roam-refile))
   :config
   ;; From https://jmthornton.net/blog/p/org-roam-created-modified-dates
   ;; Adds created and modified to properties automatically. Using this instead of org-roam-timestamps
