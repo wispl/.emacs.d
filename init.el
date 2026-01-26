@@ -743,12 +743,10 @@ If this is a daemon session, load them all immediately instead."
     "g" '("grep" . consult-ripgrep)
     "b" '("buffer" . consult-buffer)))
 (use-package consult-dir
-  :init
-  (global-set-key [remap list-directory]  #'consult-dir)
   :general
   (general-def 'vertic-map
-   ("C-x C-d" . consult-dir)
-   ("C-x C-j" . consult-dir-jump-file)))
+    ("C-x C-d" . consult-dir)
+    ("C-x C-j" . consult-dir-jump-file)))
 (use-package vertico
   :hook (on-first-input . vertico-mode)
   :config
@@ -796,9 +794,14 @@ If this is a daemon session, load them all immediately instead."
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 (use-package cape
-  :hook ((prog-mode text-mode conf-mode commint-mode eshell-mode sh-mode bash-ts-mode) . set-default-capf)
+  :hook (((prog-mode text-mode conf-mode commint-mode eshell-mode sh-mode bash-ts-mode) . set-default-capf)
+	 (TeX-mode . set-tex-capf))
   :init
   (defun set-default-capf()
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev))
+  (defun set-tex-capf()
+    (add-to-list 'completion-at-point-functions #'cape-tex)
     (add-to-list 'completion-at-point-functions #'cape-file)
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
 (use-package avy
@@ -1465,7 +1468,14 @@ If this is a daemon session, load them all immediately instead."
   (defun pdf-tools-hide-evil-cursor ()
       (set (make-local-variable 'evil-normal-state-cursor) (list nil)))
   (add-hook 'pdf-view-mode-hook #'pdf-tools-hide-evil-cursor))
-(use-package auctex-cont-latexmk :commands (auctex-cont-latexmk-toggle))
+(use-package auctex-cont-latexmk
+  :commands (auctex-cont-latexmk-toggle)
+  :config
+  ;; Runs compilation hooks when reporting errors, this sets it up with
+  ;; revert-buf and refreshes the pdf viewer if I have it open
+  ;; It is kind of hacky but works most of the time
+  (define-advice auctex-cont-latexmk-send-report (:after nil revert-buf-after-report)
+    (TeX-revert-document-buffer "main.pdf")))
 (use-package aas
   :hook ((LaTeX-mode . aas-activate-for-major-mode)
 	 (org-mode . aas-activate-for-major-mode)))
@@ -1729,12 +1739,11 @@ If this is a daemon session, load them all immediately instead."
 ;;     "."   #'nano-calendar-goto-today
 ;;     "q"   #'nano-calendar-quit
 ;;     "RET" #'nano-calendar-goto-org-agenda))
-
-
 (use-package hl-todo :hook (prog-mode . hl-todo-mode))
 (use-package emacs-everywhere
   :defer t
   :config
+  (setq emacs-everywhere-frame-name-format "emacs-anywhere")
   (defun emacs-everywhere--app-info-linux-niri ()
     "Return information on the current active window, on a Linux Niri session."
     (require 'json)
