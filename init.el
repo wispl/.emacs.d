@@ -1112,7 +1112,10 @@ If this is a daemon session, load them all immediately instead."
   :general
   (leader-keys
     "na" '("org agenda" . org-agenda)
-    "nn" '("org capture" . org-capture))
+    "nn" '("org capture" . org-capture)
+    "nc" '("org clock last" . org-clock-in-last)
+    "nC" '("org clock out" . org-clock-out)
+    "nt" '("org current clock task" . org-clock-go))
   :preface
   ;; Reduces first load delay, I don't think I need any of these actually,
   ;; well maybe bibtex in the future
@@ -1131,6 +1134,7 @@ If this is a daemon session, load them all immediately instead."
   :init
   (defun org-init ()
     ;; Set some nice settings
+    (setq org-clock-clocked-in-display 'frame-title)
     (setq org-startup-indented t
 	  ;; put tags after the heading, complements with no tag alignment
 	  ;; this is for performance in large org files
@@ -1153,7 +1157,8 @@ If this is a daemon session, load them all immediately instead."
     ;; So captured -> inbox.org -> todo.org
     (setq org-directory "~/org/"
           org-agenda-files '("agenda.org" "inbox.org" "todo.org" "calfeed.org")
-	  org-stuck-projects '("+COOKIE_DATA=\"todo recursive\"/-DONE" ("NEXT") nil ""))
+	  org-stuck-projects '("+COOKIE_DATA=\"todo recursive\"/-DONE" ("NEXT") nil "")
+	  org-clock-persist 'history)
     ;; Refiling
     ;; Everything expect for meetings gets forwarded to my inbox where I refile
     ;; them later, usually at the end of the day
@@ -1175,14 +1180,14 @@ If this is a daemon session, load them all immediately instead."
     ;;   Code is something code related
     ;;   Aerospace is something aerospace related
     ;;   Flagged is something which I need to get done quick
-    (setq org-tag-alist (quote (("reading" . r)
-				("resource" . R)
-				("tuning" . t)
-				("note" . t)
-				("hobby" . h)
-				("code" . c)
-				("aerospace" . a)
-				("FLAGGED" . f))))
+    (setq org-tag-alist (quote (("reading" . ?r)
+				("resource" . ?R)
+				("tuning" . ?t)
+				("note" . ?t)
+				("hobby" . ?h)
+				("code" . ?c)
+				("aerospace" . ?a)
+				("FLAGGED" . ?f))))
     ;; Refiling
     (setq org-refile-targets '(("todo.org" :maxlevel . 3)))
     (setq org-refile-use-outline-path 'file)
@@ -1221,9 +1226,12 @@ If this is a daemon session, load them all immediately instead."
 		     (org-agenda-overriding-header "Todo (Do these when you are being a lazy bum):")))
 	      (todo "HOLD"
 		    ((org-agenda-prefix-format " %i %-12:c%?-12t% s")
+		     ;; Skip project tasks
+		     (org-agenda-skip-function '(org-agenda-skip-subtree-if 'regexp "\[[0-9]+\/[0-9]+\]"))
 		     (org-agenda-overriding-header "\nHold (Check on these occasionally):"))))))))
   (add-hook 'org-load-hook #'org-init)
   :config
+  (org-clock-persistence-insinuate)
   ;; Auto save after refiling
   (advice-add 'org-refile :after
         (lambda (&rest _)
@@ -1241,7 +1249,8 @@ If this is a daemon session, load them all immediately instead."
 		    "r" '("org refile" . org-refile)
 		    "t" '("org tag" . org-set-tags-command)
 		    "e" '("org effort" . org-set-effort)
-		    "p" '("org make project" . make-org-project)))
+		    "p" '("org make project" . make-org-project)
+		    "c" '("org clock" . org-clock-in)))
 (use-package org-roam
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
