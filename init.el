@@ -39,7 +39,7 @@
 ;;;; For :hook, I avoid the shorthand for consistency so even if :hook (blah)
 ;;;; works, I would type out :hook (blah . pack-mode).
 
-;;;; Start of the init file
+;;;; ------------------------- Start of the init file ----------------------------
 ;;;; Package.el
 ;;
 ;; Add MELPA, always defer packages, and always ensure 
@@ -1635,7 +1635,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   dashboard: a dashboard opened once and never again
 ;;   elfeed: reading feeds in emacs, feeding reads in emacs
 ;;   olivetti: nice, sleepy margins for reading text-based stuff
-;;   emacs-everywhere: its always with you, like a puppy dog 
+;;   emacs-everywhere: its always with you, like a puppy dog
+;;   appt: reminders (for org), this one is built-in but kind of more of a utility 
 ;; TODO: (use-package calfw-blocks :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
 (use-package jinx
   ;; I pull this in using nix and not package.el
@@ -1784,4 +1785,30 @@ If this is a daemon session, load them all immediately instead."
 		'(((wayland . niri)
 		   :focus-command ("niri" "msg" "action" "focus-window" "--id" "%w")
 		   :info-function emacs-everywhere--app-info-linux-niri)))))
-;;;; End of the init file
+(use-package appt
+  :after org-agenda
+  :ensure nil
+  :config
+  ;; From https://www.reddit.com/r/emacs/comments/1gdjtcf/you_dont_need_orgalert_emacs_has_it_builtin_kinda/
+  ;; Specifically from karthink's config
+  ;; https://github.com/karthink/.emacs.d/blob/793b1209f493a10068b3c145658364dda5c24e99/lisp/setup-org.el#L1192
+  (setq appt-disp-window-function
+	(lambda (minutes-to now text)
+	  (org-show-notification
+	   (format "Appointment in %s minutes:\n%s"
+		   minutes-to text)))
+	appt-display-interval 15
+	appt-display-mode-line nil
+	appt-message-warning-time 60)
+  (define-advice appt-activate (:after (&optional _arg) hold-your-horses)
+    "`appt-activate' is too eager, rein it in."
+    (remove-hook 'write-file-functions #'appt-update-list)
+    (when (timerp appt-timer)
+      (timer-set-time appt-timer (current-time) 3000)))
+  (define-advice appt-check (:before (&optional _force) from-org-agenda)
+    "Read events from Org agenda if possible."
+    (and (featurep 'org-agenda)
+         (ignore-errors
+           (let ((inhibit-message t))
+             (org-agenda-to-appt t))))))
+;;;; --------------------------- End of the init file ----------------------------
