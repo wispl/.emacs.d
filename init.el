@@ -1115,7 +1115,7 @@ If this is a daemon session, load them all immediately instead."
     "nn" '("org capture" . org-capture)
     "nc" '("org clock last" . org-clock-in-last)
     "nC" '("org clock out" . org-clock-out)
-    "nt" '("org current clock task" . org-clock-go))
+    "nt" '("org current clock task" . org-clock-goto))
   :preface
   ;; Reduces first load delay, I don't think I need any of these actually,
   ;; well maybe bibtex in the future
@@ -1134,7 +1134,9 @@ If this is a daemon session, load them all immediately instead."
   :init
   (defun org-init ()
     ;; Set some nice settings
-    (setq org-clock-clocked-in-display 'frame-title)
+    (setq org-clock-clocked-in-display 'frame-title
+	  org-clock-in-switch-to-state "NEXT"
+	  org-clock-idle-time 30)
     (setq org-startup-indented t
 	  ;; put tags after the heading, complements with no tag alignment
 	  ;; this is for performance in large org files
