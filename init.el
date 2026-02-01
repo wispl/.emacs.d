@@ -575,18 +575,16 @@ If this is a daemon session, load them all immediately instead."
   ;; Needed for gn to work
   (evil-select-search-module 'evil-search-module 'evil-search)
   ;; Super-tab behavior
-  ;; 1) if we are inside a snippet, jump to the next field,
-  ;; 2) if we are inside a org table, jumpt to the next field
-  ;; 3) try to expand the snippet 
+  ;; 1) expand snippet
+  ;; 2) if we are inside a snippet, jump to the next field,
+  ;; 3) if we are inside a org table, jump to the next field
   ;; 4) fall back to `indent-for-tab-command'
-  ;; TODO: Order is not good, should probably expand snippets or jump,
-  ;; then org jump and then indent or complete.
   (defun smarttab ()
     (interactive)
-    (cond ((bound-and-true-p tempel--active) (tempel-next 1))
+    (cond ((tempel-expand) (1))
+	  ((bound-and-true-p tempel--active) (tempel-next 1))
 	  ((and (fboundp #'org-at-table-p) (org-at-table-p)) (org-table-next-field))
-	  (t (if (not (tempel-expand))
-		 (indent-for-tab-command)))))
+	  (t (indent-for-tab-command))))
   ;; If in a snippet, jump back, otherwise 
   (defun smartshifttab ()
     (interactive)
@@ -599,6 +597,8 @@ If this is a daemon session, load them all immediately instead."
     "j" (general-key-dispatch 'self-insert-command :timeout 0.25 "k" #'evil-normal-state)
     ;; Paste in insert mode via Ctrl-v (it is normally not too useful)
     "C-v" #'evil-paste-from-register
+    ;; Alternate completion keybind
+    "C-SPC" #'completion-at-point
     ;; Overloaded tabbing
     "<tab>"     #'smarttab
     "<backtab>" #'smartshifttab)
@@ -741,6 +741,7 @@ If this is a daemon session, load them all immediately instead."
     "RET" '("bookmark" . consult-bookmark)
     "/" '("search" . consult-line)
     "g" '("grep" . consult-ripgrep)
+    "j" '("jump" . consult-imenu)
     "b" '("buffer" . consult-buffer)))
 (use-package consult-dir
   :general
@@ -801,7 +802,7 @@ If this is a daemon session, load them all immediately instead."
     (add-to-list 'completion-at-point-functions #'cape-file)
     (add-to-list 'completion-at-point-functions #'cape-dabbrev))
   (defun set-tex-capf()
-    (add-to-list 'completion-at-point-functions #'cape-tex)
+    ;; (add-to-list 'completion-at-point-functions #'cape-tex)
     (add-to-list 'completion-at-point-functions #'cape-file)
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)))
 (use-package avy
@@ -1113,6 +1114,7 @@ If this is a daemon session, load them all immediately instead."
   (leader-keys
     "na" '("org agenda" . org-agenda)
     "nn" '("org capture" . org-capture)
+    "nj" '("org jump agenda" . consult-org-agenda)
     "nc" '("org clock last" . org-clock-in-last)
     "nC" '("org clock out" . org-clock-out)
     "nt" '("org current clock task" . org-clock-goto))
@@ -1239,6 +1241,8 @@ If this is a daemon session, load them all immediately instead."
         (lambda (&rest _)
           (org-save-all-org-buffers)))
   (general-def 'normal 'org-mode-map "RET" #'org-open-at-point)
+  ;; I define projects as just simply having multiple tasks. That is it. To help
+  ;; org identify projects, we a insert COOKIE_DATA property.
   (defun make-org-project()
     (interactive)
     (when (not (string-match "\\[[0-9]*/[0-9]*\\]" (thing-at-point 'line t)))
@@ -1248,6 +1252,8 @@ If this is a daemon session, load them all immediately instead."
 	(insert " [/]")
 	(org-update-statistics-cookies nil))))
   (localleader-keys 'org-mode-map
+		    "s" '("org state" . org-todo)
+		    "j" '("org jump heading" . consult-org-heading)
 		    "r" '("org refile" . org-refile)
 		    "t" '("org tag" . org-set-tags-command)
 		    "e" '("org effort" . org-set-effort)
