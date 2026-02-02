@@ -1532,6 +1532,13 @@ If this is a daemon session, load them all immediately instead."
     (advice-add 'orgtbl-ctrl-c-ctrl-c :after #'my/orgtbl-replace)
     (orgtbl-mode 1)
     (insert "|"))
+  ;; Returns whether we are inside an qty macro or not
+  (defun my/inside-qty ()
+    (save-excursion
+      ;; We move backward to the previous } since something like \qty{123}{\kg|}
+      ;; will have a `TeX-current-macro' of nil
+      (search-backward "}" (line-beginning-position) t)
+      (string-equal (TeX-current-macro) "qty")))
   ;; From https://github.com/tecosaur/LaTeX-auto-activating-snippets/issues/25
   ;; Allows using laas in markdown math environments as well
   (defun laas-mathp ()
@@ -1543,31 +1550,56 @@ If this is a daemon session, load them all immediately instead."
      (t (message "LaTeX-auto-activated snippets does not currently support math in any of %s"
 		 (aas--modes-to-activate major-mode))
 	nil)))
-  ;; Condition for expanding snippets at the start of the line. This is useful
-  ;; for what I consider "block" elements like align, figures, and tables.
-  ;; Caveat is that if you type genali, it will still expand.
-  (defun my/line-start ()
-    (let ((symbol-bounds (bounds-of-thing-at-point 'symbol))
-	  (line-start (line-beginning-position)))
-      (when symbol-bounds
-	(save-excursion
-	  (goto-char (car symbol-bounds))
-	  (skip-chars-backward " \t")
-	  (= (point) line-start)))))
-  ;; General snippets which should expand anywhere
   (aas-set-snippets 'laas-mode
     "mk"   '(tempel "$" p "$" q)
     "qty"  '(tempel "\\qty{" p "}" "{" p "}" q))
   ;; General snippets which should expand only on the beginning of the line
   (aas-set-snippets 'laas-mode
-    :cond 'my/line-start
+    :cond 'bolp
     "dm"   '(tempel "\\[" n> q n "\\]" >)
     "beg"  '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
     "fig"  '(tempel "\\begin{figure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
     "enum" '(tempel "\\begin{enumerate}" n> "\\item " q > n "\\end{enumerate}" >)
     "item" '(tempel "\\begin{itemize}" n> "\\item " q > n "\\end{itemize}" >)
     "tabl" '(tempel "\\begin{table}[h]" n> "\\centering" n> q n "\\end{table}" > :post (my/latex-orgtb))
-    "ali"  '(tempel "\\begin{align}" n> q n "\\end{align}" >))
+    "ali"  '(tempel "\\begin{align*}" n> q n "\\end{align*}" >)
+    "mdframed" '(tempel "\\begin{mdframed}" n> q n "\\end{mdframed}" >)
+    "theorem" '(tempel "\\begin{theorem}" n> q n "\\end{theorem}" >)
+    "definition" '(tempel "\\begin{definition}[" (p (read-string "Definition: ")) "]" n> q n "\\end{definition}" >))
+  ;; Snippets which expand inside qty (for units)
+  ;; I am only going to put the most common ones with the most common abbreviations
+  (aas-set-snippets 'laas-mode
+    :cond 'my/inside-qty
+    ;; Prefixes
+    "mega"    "\\mega"
+    "kilo"    "\\kilo"
+    "centi"   "\\centi"
+    "milli"   "\\milli"
+    "micro"   "\\micro"
+    "pico"    "\\pico"
+    ;; Exponents
+    "per"   "\\per"
+    "sr"    "\\square"
+    "cb"    "\\cubic"
+    ;; Units
+    "newton" "\\newton"
+    "joule"  "\\joule"
+    "watt"   "\\watt"
+    "gram"   "\\gram"
+    "liter"  "\\liter"
+    "meter"  "\\meter"
+    "pascal" "\\pascal"
+    "second" "\\second"
+    ;; non SI
+    "lbf"   "\\lbf"
+    "lb"    "\\lb"
+    "slug"  "\\slug"
+    "psi"   "\\psi"
+    "feet"  "\\feet"
+    ;; These have minimal conflicts and are used a lot so shorthands are justified
+    "kg"  "\\kilo\\gram"
+    "vel" "\\meter\\per\\second"
+    "acc" "\\meter\\per\\square\\second")
   ;; Reset these snippets, we will override them later
   (aas-set-snippets 'laas-mode
     "RR" nil
@@ -1598,6 +1630,7 @@ If this is a daemon session, load them all immediately instead."
     "sq"     '(tempel "\\sqrt{" (p "x") "}" q)
     "ceil"   '(tempel "\\left\\lceil " (p "x") " \\right\\rceil" q)
     "floor"  '(tempel "\\left\\lfloor " (p "x") " \\right\\rfloor" q)
+    "lapl"   "\\Lapl"
     ;; Subscripts and Superscripts
     "invs"   "^{-1}"
     "td"     '(tempel "^{" p "}" q)
@@ -1615,6 +1648,7 @@ If this is a daemon session, load them all immediately instead."
     "epsi" "\\epsilon"
     "nabl" "\\nabla"
     "lamb" "\\lambda"
+    "thet" "\\theta"
     "OO"   "\\emptyset"
     "RR"   "\\R"
     "QQ"   "\\Q"
