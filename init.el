@@ -1550,12 +1550,14 @@ If this is a daemon session, load them all immediately instead."
      (t (message "LaTeX-auto-activated snippets does not currently support math in any of %s"
 		 (aas--modes-to-activate major-mode))
 	nil)))
+  ;; checks if point is at beginning of indentation 
+  (defun boip () (= (save-excursion (back-to-indentation) (point)) (point)))
   (aas-set-snippets 'laas-mode
     "mk"   '(tempel "$" p "$" q)
     "qty"  '(tempel "\\qty{" p "}" "{" p "}" q))
   ;; General snippets which should expand only on the beginning of the line
   (aas-set-snippets 'laas-mode
-    :cond 'bolp
+    :cond 'boip
     "dm"   '(tempel "\\[" n> q n "\\]" >)
     "beg"  '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
     "fig"  '(tempel "\\begin{figure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
@@ -1676,7 +1678,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   elfeed: reading feeds in emacs, feeding reads in emacs
 ;;   olivetti: nice, sleepy margins for reading text-based stuff
 ;;   emacs-everywhere: its always with you, like a puppy dog
-;;   appt: reminders (for org), this one is built-in but kind of more of a utility 
+;;   appt: reminders (for org), this one is built-in but kind of more of a utility
+;;   restart-emacs: give emacs a little restart
 ;; TODO: (use-package calfw-blocks :vc (:url "https://github.com/ml729/calfw-blocks.git" :rev :newest))
 (use-package jinx
   ;; I pull this in using nix and not package.el
@@ -1851,4 +1854,5 @@ If this is a daemon session, load them all immediately instead."
          (ignore-errors
            (let ((inhibit-message t))
              (org-agenda-to-appt t))))))
+(use-package restart-emacs :commands (restart-emacs))
 ;;;; --------------------------- End of the init file ----------------------------
