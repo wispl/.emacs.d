@@ -1776,7 +1776,26 @@ If this is a daemon session, load them all immediately instead."
 	  ("https://kobzol.github.io/feed.xml" rust python)
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
-	  ("https://mcyoung.xyz/feed.xml" optimization))))
+	  ("https://mcyoung.xyz/feed.xml" optimization)))
+  ;; Split view in elfeed, so the top part is the search buffer and the bottom
+  ;; is the view buffer. From: https://karthinks.com/software/lazy-elfeed/
+  (defun elfeed-display-buffer (buf &optional act)
+    (pop-to-buffer buf)
+    (set-window-text-height (get-buffer-window) (round (* 0.60 (frame-height)))))
+  (setq elfeed-show-entry-switch #'elfeed-display-buffer
+	elfeed-search-remain-on-entry t)
+  (defun elfeed-split-show (lines)
+    (interactive)
+    (with-selected-window (get-buffer-window (elfeed-search-buffer))
+      (forward-line lines)
+      (hl-line-highlight)
+      (call-interactively 'elfeed-search-show-entry)))
+  (defun elfeed-split-next () (interactive) (elfeed-split-show +1))
+  (defun elfeed-split-prev () (interactive) (elfeed-split-show -1))
+
+  (general-def 'normal 'elfeed-show-mode-map 
+    [remap elfeed-show-next] #'elfeed-split-next
+    [remap elfeed-show-prev] #'elfeed-split-prev))
 (use-package olivetti :general (leader-keys "oz" '("open zen" . olivetti-mode)))
 ;; (use-package nano-calendar
 ;;   :vc (:url "https://github.com/rougier/nano-calendar.git" :rev :newest)
