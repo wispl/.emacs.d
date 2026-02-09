@@ -405,9 +405,10 @@ If this is a daemon session, load them all immediately instead."
   (leader-keys "oe" '("open eshell" . eshell)))
 (use-package flymake
   :ensure nil
+  :config
+  (setq flymake-show-diagnostics-at-end-of-line t)
   ;; Use config because usually flymake already gets loaded by some other modes
   ;; so we just have to load the keybindings.
-  :config
   (leader-keys "od" '("open diagnostic" . flymake-show-buffer-diagnostics))
   (general-def 'normal
     "]d" '("next diagnostic" . flymake-goto-next-error)
@@ -435,20 +436,16 @@ If this is a daemon session, load them all immediately instead."
   (set-face-attribute 'tab-bar-tab-inactive nil :background "unspecified" :inherit 'font-lock-comment-face)
   (set-face-attribute 'tab-bar-tab nil :background "unspecified" :inherit 'default :box nil)
   ;; Top padding, clean up buttons, add icon, and sleeker tabs
-  (defun tab-bar-top-pad () (propertize " " 'display' (raise +0.45)))
-  (defun tab-bar-icon () (propertize "󰧭" 'face '(:inherit 'default :height 300) 'display' (raise -0.10)))
-
+  (defun tab-bar-icon () (propertize " " 'face '(:inherit 'default :height 300) 'display' (raise -0.10)))
   (setq tab-bar-format (butlast tab-bar-format))
   (add-to-list 'tab-bar-format 'tab-bar-icon)
-  (add-to-list 'tab-bar-format 'tab-bar-top-pad t))
-
+  )
 (use-package saveplace
   :ensure nil
   :hook (on-first-file . save-place-mode))
 (use-package savehist
   :ensure nil
   :hook (on-first-file . savehist-mode))
-
 (use-package hl-line
   :ensure nil
   :hook (on-first-buffer . global-hl-line-mode))
@@ -742,6 +739,7 @@ If this is a daemon session, load them all immediately instead."
     "/" '("search" . consult-line)
     "g" '("grep" . consult-ripgrep)
     "j" '("jump" . consult-imenu)
+    "hh" '("help help" . consult-info)
     "b" '("buffer" . consult-buffer)))
 (use-package consult-dir
   :general
@@ -901,6 +899,7 @@ If this is a daemon session, load them all immediately instead."
     "?"   #'dirvish-dispatch
     "h"   #'dired-up-directory
     "l"   #'dired-find-file
+    "q"   #'dirvish-quit
     "<tab>" #'dirvish-subtree-toggle
     "<backtab>" #'dirvish-subtree-up
     "S"   #'dirvish-quicksort
@@ -1738,8 +1737,8 @@ If this is a daemon session, load them all immediately instead."
 (use-package calfw-org :commands cfw:open-org-calendar)
 (use-package apheleia)
 (use-package flymake-shellcheck
-  :hook ((sh-mode . flymake-shellcheck-load)
-	 (sh-mode . flymake-mode))
+  :hook (((sh-mode bash-ts-mode). flymake-shellcheck-load)
+	 ((sh-mode bash-ts-mode). flymake-mode))
   :commands flymake-shellcheck-load)
 (use-package dashboard
   :demand t
@@ -1754,6 +1753,8 @@ If this is a daemon session, load them all immediately instead."
   (setq dashboard-set-footer nil))
 (use-package elfeed
   :commands elfeed
+  :general
+  (leader-keys "or" '("open rss" . elfeed))
   :init
   (setq elfeed-db-directory (file-name-concat user-emacs-directory "data" "elfeed" "db/")
 	elfeed-enclosure-default-dir (file-name-concat user-emacs-directory "data" "elfeed" "enclosures/"))
