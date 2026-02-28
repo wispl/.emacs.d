@@ -593,7 +593,7 @@ If this is a daemon session, load them all immediately instead."
     ;; Enter normal mode by entering jk while in insert mode
     "j" (general-key-dispatch 'self-insert-command :timeout 0.25 "k" #'evil-normal-state)
     ;; Paste in insert mode via Ctrl-v (it is normally not too useful)
-    "C-v" #'evil-paste-from-register
+    "C-v" #'evil-paste-after
     ;; Alternate completion keybind
     "C-SPC" #'completion-at-point
     ;; Overloaded tabbing
@@ -936,7 +936,7 @@ If this is a daemon session, load them all immediately instead."
   (setq dirvish-attributes '(file-size nerd-icons subtree-state vc-state)
 	dirvish-mode-line-format
 	'(:left (sort file-time symlink) :right (omit yank index)))
-  ;; Not sure why by -11 gives perfect height
+  ;; Not sure why but -11 gives perfect height
   (when-let (height (- (bound-and-true-p doom-modeline-height) 11))
     (setq dirvish-mode-line-height height)
     (setq dirvish-header-line-height height))
@@ -1360,11 +1360,9 @@ If this is a daemon session, load them all immediately instead."
   (evil-org-agenda-set-keys))
 (use-package auctex
   :mode ("\\.tex\\'" . latex-mode)
-  :hook (TeX-mode . auto-fill-mode)
+  :hook ((LaTeX-mode . auto-fill-mode)
+	 (LaTeX-mode . prettify-symbols-mode) )
   :config
-    (setq preview-protect-point t)
-  (setq preview-locating-previews-message nil)
-  (setq preview-leave-open-previews-visible t)
   (setq TeX-parse-self t
 	TeX-auto-save t
 	;; Cleaner dir
@@ -1374,18 +1372,21 @@ If this is a daemon session, load them all immediately instead."
 	TeX-source-correlate-mode t
 	TeX-source-correlate-method 'synctex
 	TeX-source-correlate-start-server nil
-	;; Don't ask
 	TeX-save-query nil
-	;; I also use the same one so don't prompt
+	;; I always use the same one so don't prompt
 	TeX-master "main.tex"
 	;; from Doom, better scaling for previews
 	preview-scale 1.4
 	preview-scale-function (lambda () (* (/ 10.0 (preview-document-pt)) preview-scale))
-	;; Don't cache preamble
+	;; Preview improvements
 	preview-auto-cache-preamble nil
+	preview-protect-point t
+	preview-locating-previews-message nil
+	preview-leave-open-previews-visible t
+	;; Preview using DVIs, faster, but has some caveats (hyperref not working)
+	preview-LaTeX-command-replacements '(preview-LaTeX-disable-pdfoutput)
 	;; View using pdf tools
 	TeX-view-program-selection '((output-pdf "PDF Tools")))
-  (add-hook 'LaTeX-mode-hook #'prettify-symbols-mode)
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
   ;; This huge function makes proper and really pleasing indentations for
   ;; item-like environments. This was taken from:
@@ -1773,11 +1774,11 @@ If this is a daemon session, load them all immediately instead."
 	  ("https://ferd.ca/feed.rss" distributed-systems)
 	  ("https://pythonspeed.com/atom.xml" python)
 	  ("https://www.b-list.org/feeds/entries/" python)
-	  ;; Personal favorite is writing python like it is rust
 	  ("https://kobzol.github.io/feed.xml" rust python)
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
-	  ("https://mcyoung.xyz/feed.xml" optimization)))
+	  ("https://mcyoung.xyz/feed.xml" optimization)
+	  ("https://news.ycombinator.com/rss" general)))
   ;; Split view in elfeed, so the top part is the search buffer and the bottom
   ;; is the view buffer. From: https://karthinks.com/software/lazy-elfeed/
   (defun elfeed-display-buffer (buf &optional act)
