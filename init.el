@@ -1069,15 +1069,22 @@ If this is a daemon session, load them all immediately instead."
     (add-to-list 'major-mode-remap-alist mapping)))
 (use-package c-ts-mode
   :ensure nil
-  :general-config
-  (localleader-keys 'c-ts-mode-map
-    "o" '("other file" . find-sibling-file))
   :config
   (add-to-list 'find-sibling-rules '("/\\([^/]+\\)\\.c\\(c\\|pp\\)?\\'" "\\1.h\\(h\\|pp\\)?\\'"))
   (add-to-list 'find-sibling-rules '("/\\([^/]+\\)\\.h\\(h\\|pp\\)?\\'" "\\1.c\\(c\\|pp\\)?\\'"))
   (setq c-default-style "linux"
         c-ts-mode-indent-style 'linux
 	c-ts-mode-indent-offset 8)
+  (setq gdb-many-windows t
+	gdb-use-separate-io-buffer t
+	gdb-default-window-configuration-file (file-name-concat user-emacs-directory "gdbwinconf"))
+  (defun my-stm32cubemx ()
+    (interactive)
+    (start-process "stm32cubemx " nil "stm32cubemx"))
+  (localleader-keys 'c-ts-mode-map
+    "e" '("embedded (open stm32cubemx)" . my-stm32cubemx)
+    "d" '("debugger" . gdb)
+    "o" '("other file" . find-sibling-file))
   ;; HACK: for some reason ts indent is broken in c, apparantly fixed in emacs 31
   ;; this breaks indentation style a little, but it should suffice for now
   (general-def 'insert 'c-ts-mode-map
