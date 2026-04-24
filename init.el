@@ -1453,6 +1453,30 @@ If this is a daemon session, load them all immediately instead."
 				    calc-language latex
 				    calc-prefer-frac t
 				    calc-angle-mode rad)))))))
+
+  (defun inkfig ()
+    (interactive)
+    (start-process "inkfig " nil "inkfig" (format "%s/figures/%s.svg"
+						  (buffer-local-value 'default-directory (current-buffer))
+						  (symbol-at-point))))
+  ;; Copies the latest screenshot to the images directory. Optionally makes the
+  ;; image transparent (note that image has to have white background). This requires a specifc naming convention, 
+  ;; images get copied as "filename-imagecount", so if the file name is 1.tex, and there are
+  ;;   images/1-1.png, images/1-2.png
+  ;; then this command will create the file images/1-3.png.
+  (defun my-upload-image (transparent)
+    (interactive)
+    (let ((filename (shell-command-to-string
+		     (format "echo images/%s-$(($(find images/%s-*.png 2>/dev/null | wc -l) + 1)).png"
+			     (file-name-base)
+			     (file-name-base))))
+	  (shell-command-switch "-ic"))
+      (call-process-shell-command (format "copy-screenshot %s &" filename) nil 0)
+      (if transparent
+	  (call-process-shell-command (format "magick-transparent %s &" filename) nil 0)
+	nil)))
+  (defun my-upload-image-transparent () (interactive) (my-upload-image t))
+  (defun my-upload-image-nontransparent () (interactive) (my-upload-image nil))
   ;; Compile using latexmk
   (defun compile-latex ()
     (interactive)
@@ -1467,6 +1491,8 @@ If this is a daemon session, load them all immediately instead."
 						  (symbol-at-point))))
   (localleader-keys 'LaTeX-mode-map
     "e" '("latex evaluate" . latex-math-from-calc)
+    "u" '("latex upload" . my-upload-image-transparent)
+    "U" '("latex upload" . my-upload-image-nontransparent)
     "p" '("latex preview" . preview-at-point)
     "P" '("latex unPreview" . preview-clearout-at-point)
     "f" '("latex figures" . inkfig)
