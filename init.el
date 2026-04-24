@@ -200,13 +200,15 @@ If this is a daemon session, load them all immediately instead."
   :demand t
   :init
   (setq-default fill-column 80
-		;; Wrap presevers words
+		;; Wrap preserves words
 		word-wrap t
 		;; Truncate lines by default, enable 'visual-line-mode' for wrapping
 		truncate-lines t)
   ;; Default wrap in 'text-mode'
   (add-hook 'text-mode-hook #'visual-line-mode)
-
+  ;; Automagically chmods executable files
+  (add-hook 'after-save-hook
+	    #'executable-make-buffer-file-executable-if-script-p)
   ;; https://github.com/doomemacs/doomemacs/blob/01aadd8900be45f912124d9d815d8790f540d38c/core/core.el#L177
   (setq idle-update-delay 1)
   ;; Fonts
@@ -246,6 +248,12 @@ If this is a daemon session, load them all immediately instead."
 	;; Don't render stuff in inactive windows, distracting...
 	cursor-in-non-selected-windows nil
 	highlight-nonselected-windows nil
+
+	;; Automatically select help window when opening it
+	help-window-select t
+
+	;; Don't look up hostnames when using ffap (gf for vim)
+	ffap-machine-p-known 'reject
 
 	;; Answer yes-no-prompts using just y or n
 	use-short-answers t)
@@ -603,12 +611,11 @@ If this is a daemon session, load them all immediately instead."
   (general-def 'global-map
     "RET"       #'default-indent-new-line)
   ;; Extra normal mode bindings
-  (general-def 'normal
-    "]t" #'tab-next
-    "[t" #'tab-previous)
   ;; Move windows via C-hjkl, help is rebounded via <leader>h so it is fine to
   ;; remap C-h (I think)
   (general-def 'normal 'override
+    "]t" #'tab-next
+    "[t" #'tab-previous
     "C-h" #'windmove-left
     "C-j" #'windmove-down
     "C-k" #'windmove-up
@@ -992,6 +999,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   markdown-mode: marker time
 ;;   rust-mode: for a happy crustacean (TODO: restic-mode?)
 ;;   nix-mode: it is snowing! (TODO: nix-ts-mode)
+;;   terraform-mode: terraforming the world (well it is opening tofus for me)
+;;   qml-mode: for occasionally qt design
 ;;   code-cells: jupyter shenaningans, requires jupytext (https://github.com/astoff/code-cells.el)
 ;;   beancount: counting beans
 ;;   org-mode: magical unicorn
@@ -1020,6 +1029,7 @@ If this is a daemon session, load them all immediately instead."
    ("\\.c\\'"      . c-ts-mode)
    ("\\.h\\'"      . c-or-c++-ts-mode)
    ("\\.cpp\\'"    . c++-ts-mode)
+   ("\\.cs\\'"     . c-sharp-ts-mode)
    ("\\.js\\'"     . js-ts-mode)
    ("\\([tj]sx\\)\\'" . tsx-ts-mode)
    ;; I am not sure how to make this all merged... probably some regex
@@ -1051,6 +1061,7 @@ If this is a daemon session, load them all immediately instead."
 	  (lua "https://github.com/MunifTanjim/tree-sitter-lua.git")
 	  (java "https://github.com/tree-sitter/tree-sitter-java.git")
 	  (toml "https://github.com/ikatyang/tree-sitter-toml.git")
+	  (csharp "https://github.com/tree-sitter/tree-sitter-c-sharp.get")
 	  (yaml "https://github.com/ikatyang/tree-sitter-yaml.git")))
   ;; Do some remaps for built-in modes
   (dolist (mapping
@@ -1104,6 +1115,12 @@ If this is a daemon session, load them all immediately instead."
   :config
   (setq rust-mode-treesitter-derive t))
 (use-package nix-mode :mode "\\.nix\\'")
+(use-package terraform-mode
+  :mode "\\.tf\\'"
+  :config
+  (setq terraform-command "tofu"
+	terraform-format-on-save t))
+(use-package qml-mode :mode "\\.qml\\'")
 (use-package code-cells :mode ("\\.ipynb\\'" . code-cells-mode))
 (use-package beancount
   :mode ("\\.bean\\'" . beancount-mode)
@@ -1368,7 +1385,7 @@ If this is a daemon session, load them all immediately instead."
 (use-package auctex
   :mode ("\\.tex\\'" . latex-mode)
   :hook ((LaTeX-mode . auto-fill-mode)
-	 (LaTeX-mode . prettify-symbols-mode) )
+	 (LaTeX-mode . prettify-symbols-mode))
   :config
   (setq TeX-parse-self t
 	TeX-auto-save t
@@ -1392,6 +1409,7 @@ If this is a daemon session, load them all immediately instead."
 	preview-leave-open-previews-visible t
 	;; Preview using DVIs, faster, but has some caveats (hyperref not working)
 	preview-LaTeX-command-replacements '(preview-LaTeX-disable-pdfoutput)
+	preview-image-type 'dvipng
 	;; View using pdf tools
 	TeX-view-program-selection '((output-pdf "PDF Tools")))
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
@@ -1591,13 +1609,16 @@ If this is a daemon session, load them all immediately instead."
   ;; General snippets which should expand only on the beginning of the line
   (aas-set-snippets 'laas-mode
     :cond 'boip
-    "dm"   '(tempel "\\[" n> q n "\\]" >)
-    "beg"  '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
-    "fig"  '(tempel "\\begin{figure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
-    "enum" '(tempel "\\begin{enumerate}" n> "\\item " q > n "\\end{enumerate}" >)
-    "item" '(tempel "\\begin{itemize}" n> "\\item " q > n "\\end{itemize}" >)
-    "tabl" '(tempel "\\begin{table}[h]" n> "\\centering" n> q n "\\end{table}" > :post (my/latex-orgtb))
-    "ali"  '(tempel "\\begin{align*}" n> q n "\\end{align*}" >)
+    "dm"    '(tempel "\\[" n> q n "\\]" >)
+    "beg"   '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
+    "fig"   '(tempel "\\begin{figure}[htb]" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
+    "pic"   '(tempel "\\begin{figure}[htb]" n> "\\centering" n> "\\caption{" p "}" n> "\\includegraphics[width=\\linewidth]{" q "}" > n "\\end{figure}" >)
+    "mfig"  '(tempel "\\begin{marginfigure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{marginfigure}" >)
+    "mnote" '(tempel "\\marginnote{" n> q n "}" >)
+    "enum"  '(tempel "\\begin{enumerate}" n> "\\item " q > n "\\end{enumerate}" >)
+    "item"  '(tempel "\\begin{itemize}" n> "\\item " q > n "\\end{itemize}" >)
+    "tabl"  '(tempel "\\begin{table}[h]" n> "\\centering" n> q n "\\end{table}" > :post (my/latex-orgtb))
+    "ali"   '(tempel "\\begin{align*}" n> q n "\\end{align*}" >)
     "mdframed" '(tempel "\\begin{mdframed}" n> q n "\\end{mdframed}" >)
     "theorem" '(tempel "\\begin{theorem}" n> q n "\\end{theorem}" >)
     "definition" '(tempel "\\begin{definition}[" (p (read-string "Definition: ")) "]" n> q n "\\end{definition}" >))
@@ -1611,11 +1632,11 @@ If this is a daemon session, load them all immediately instead."
     "centi"   "\\centi"
     "milli"   "\\milli"
     "micro"   "\\micro"
-    "pico"    "\\pico"
+    ;; "pico"    "\\pico"
     ;; Exponents
     "per"   "\\per"
-    "sr"    "\\square"
-    "cb"    "\\cubic"
+    ;; "ss"     "\\square"
+    ;; "cc"     "\\cubic"
     ;; Units
     "newton" "\\newton"
     "joule"  "\\joule"
@@ -1648,6 +1669,7 @@ If this is a daemon session, load them all immediately instead."
     "sum"  '(tempel "\\sum" "_{" (p "k = 0") "}^{" (p "\\infty") "} " q)
     "lim"  '(tempel "\\lim" "_{" (p "n \to \infty") "} " q)
     "part" '(tempel "\\frac{\\partial " (p "x") "}{\\partial " (p "y") "}")
+    "ppart" '(tempel "\\frac{\\partial^2 " (p "x") "}{\\partial " (p "y") "^2}")
     "mcal" '(tempel "\\mathcal{" p "}" q)
     "tt"   '(tempel "\\text{" p "}" q)
     "case" '(tempel "\\begin{cases}" n> q n "\\end{cases}" >)
@@ -1656,11 +1678,11 @@ If this is a daemon session, load them all immediately instead."
     "pmat" '(tempel "\\begin{pmatrix}" n> q n "\\end{pmatrix}" >)
     "mat"  '(tempel (p (read-number "Rows: ") rows noinsert)
 		   (p (read-number "Cols: ") cols noinsert)
-		   "\\begin{" (p "pmatrix" type) "}" n
+		   "\\begin{pmatrix}" n
 		   >
 		   (* (1- rows) (p " ") (* (1- cols) " & " (p " ")) "\\\\" n)
 		   (p " ") (* (1- cols) " & " (p " ")) n
-		   "\\end{" type "}" >)
+		   "\\end{pmatrix}" >)
     ;; Operations
     "sq"     '(tempel "\\sqrt{" (p "x") "}" q)
     "ceil"   '(tempel "\\left\\lceil " (p "x") " \\right\\rceil" q)
@@ -1680,10 +1702,12 @@ If this is a daemon session, load them all immediately instead."
     ;; Symbols
     "oo"   "\\infty"
     "pi"   "\\pi"
-    "epsi" "\\epsilon"
-    "nabl" "\\nabla"
-    "lamb" "\\lambda"
-    "thet" "\\theta"
+    "phi"   "\\pi"
+    "psi"   "\\pi"
+    "epsilon" "\\epsilon"
+    "nabla" "\\nabla"
+    "lambda" "\\lambda"
+    "theta" "\\theta"
     "OO"   "\\emptyset"
     "RR"   "\\R"
     "QQ"   "\\Q"
@@ -1811,7 +1835,8 @@ If this is a daemon session, load them all immediately instead."
 	  ("https://smallcultfollowing.com/babysteps//atom.xml" rust)
 	  ("https://nullprogram.com/feed/" c)
 	  ("https://mcyoung.xyz/feed.xml" optimization)
-	  ("https://news.ycombinator.com/rss" general)))
+	  ("https://news.ycombinator.com/rss" general)
+	  ("https://lcamtuf.substack.com/feed" electronics)))
   ;; Split view in elfeed, so the top part is the search buffer and the bottom
   ;; is the view buffer. From: https://karthinks.com/software/lazy-elfeed/
   (defun elfeed-display-buffer (buf &optional act)
