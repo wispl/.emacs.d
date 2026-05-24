@@ -546,6 +546,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   doom-modeline: modeline
 ;;   anzu and evil anzu: anzu, shows search results, used by 'doom-modeline'
 ;;   better-jumper: more predictable jumping
+;;   evil-textobj-tree-sitter: treesitter powered text objects
 ;; Evil is a constant battle between emacs and evil.
 (use-package evil
   ;; This is risky, we have to ensure evil is loaded before other modules
@@ -728,12 +729,20 @@ If this is a daemon session, load them all immediately instead."
   :config
   (global-anzu-mode +1)
   (require 'evil-anzu))
-
 (use-package better-jumper
   :hook (on-first-input . better-jumper-mode)
   :init
   (global-set-key [remap evil-jump-forward]  #'better-jumper-jump-forward)
   (global-set-key [remap evil-jump-backward] #'better-jumper-jump-backward))
+;; TODO: enable this someday
+;; (use-package evil-textobj-tree-sitter
+;;   :after evil
+;;   :init
+;;   (define-key evil-outer-text-objects-map "F" (evil-textobj-tree-sitter-get-textobj "function.outer"))
+;;   (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner")))
+  ;; :hook (on-first-input . (lambda ()
+  ;; 			    (define-key evil-outer-text-objects-map "F" (evil-textobj-tree-sitter-get-textobj "function.outer"))
+  ;; 			    (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))))
 ;;;; Editor
 ;;
 ;; Important packages for editing, this is the usual "modern" stack:
@@ -749,6 +758,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   avy: jumping around (like vim-sneak, vim-easymotion, and co.)
 ;;   wgrep: slick search and replace
 ;;   vundo: visual undo
+;;   dumb-jump: a smart dumb-jump
+;;   dtrt-indent: guess the indentation so I don't have to
 ;; Editing is a hard job
 (use-package consult
   :general
@@ -833,6 +844,21 @@ If this is a daemon session, load them all immediately instead."
   :config
   (setq wgrep-auto-save-buffer t))
 (use-package vundo :commands (vundo))
+(use-package dumb-jump
+  :init
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+  :general
+  (general-def 'normal 'override
+    "gd" #'xref-find-definitions
+    "gr" #'xref-find-references)
+  :config
+  (setq dumb-jump-prefer-searcher 'rg
+	xref-show-definitions-function #'consult-xref)
+  (add-hook 'dumb-jump-after-jump-hook #'better-jumper-set-jump))
+(use-package dtrt-indent
+  :hook (on-first-buffer . dtrt-indent-global-mode)
+  :config
+  (setq dtrt-indent-max-lines 2000))
 
 ;;;; Development
 ;;
@@ -1103,10 +1129,14 @@ If this is a daemon session, load them all immediately instead."
   (defun my-stm32cubemx ()
     (interactive)
     (start-process "stm32cubemx " nil "stm32cubemx"))
+  (defun my-find-header ()
+    (interactive)
+    (consult-fd nil (concat (file-name-base buffer-file-name) ".h")))
   (localleader-keys 'c-ts-mode-map
     "e" '("embedded (open stm32cubemx)" . my-stm32cubemx)
     "d" '("debugger" . gdb)
-    "o" '("other file" . find-sibling-file))
+    "o" '("other file" . find-sibling-file)
+    "h" '("other header" . my-find-header))
   ;; HACK: for some reason ts indent is broken in c, apparantly fixed in emacs 31
   ;; this breaks indentation style a little, but it should suffice for now
   (general-def 'insert 'c-ts-mode-map
