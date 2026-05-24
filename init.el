@@ -648,6 +648,17 @@ If this is a daemon session, load them all immediately instead."
   ;;     (set-marker fixup-mark nil)))
   ;; (advice-add #'evil-join :override #'better-evil-join)
   ;; Core leader bindings
+
+  ;; From Doom, don't move cursor to start of selection after indenting, such as
+  ;; when using =i{ to indent inside braces, which without this will move to the
+  ;; start of { which is very annoying.
+  (define-advice evil-indent (:around (fn &rest args) my-retain-cursor)
+    (save-excursion (apply fn args)))
+
+  ;; From Doom, make numbered registers local to buffer, like they are in vim.
+  (define-advice evil-global-marker-p (:after-until (char) my-local-numbered-registers)
+    (and (>= char ?2) (<= char ?9)))
+
   (leader-keys
     "<tab>" '("find tabs" . tab-bar-select-tab-by-name)
     "SPC"   '("alt buffer" . evil-switch-to-windows-last-buffer)
@@ -691,7 +702,7 @@ If this is a daemon session, load them all immediately instead."
   :init
   (setq evil-textobj-anyblock-blocks
         '(("(" . ")")
-          ("{" . "}")
+	  ("{" . "}")
           ("\\[" . "\\]")
           ("<" . ">")
 	  ("'" . "'")
@@ -1612,7 +1623,7 @@ If this is a daemon session, load them all immediately instead."
     "dm"    '(tempel "\\[" n> q n "\\]" >)
     "beg"   '(tempel "\\begin{" (s env) "}" n> q n "\\end{" (s env) "}" >)
     "fig"   '(tempel "\\begin{figure}[htb]" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{figure}" >)
-    "pic"   '(tempel "\\begin{figure}[htb]" n> "\\centering" n> "\\caption{" p "}" n> "\\includegraphics[width=\\linewidth]{" q "}" > n "\\end{figure}" >)
+    "img"   '(tempel "\\begin{figure}[htb]" n> "\\centering" n> "\\caption{" p "}" n> "\\includegraphics[width=\\linewidth]{" q "}" > n "\\end{figure}" >)
     "mfig"  '(tempel "\\begin{marginfigure}" n> "\\centering" n> "\\caption{" p "}" n> "\\incfig{" q "}" > n "\\end{marginfigure}" >)
     "mnote" '(tempel "\\marginnote{" n> q n "}" >)
     "enum"  '(tempel "\\begin{enumerate}" n> "\\item " q > n "\\end{enumerate}" >)
@@ -1702,8 +1713,8 @@ If this is a daemon session, load them all immediately instead."
     ;; Symbols
     "oo"   "\\infty"
     "pi"   "\\pi"
-    "phi"   "\\pi"
-    "psi"   "\\pi"
+    "phi"   "\\phi"
+    "psi"   "\\psi"
     "epsilon" "\\epsilon"
     "nabla" "\\nabla"
     "lambda" "\\lambda"
