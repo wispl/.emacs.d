@@ -388,7 +388,6 @@ If this is a daemon session, load them all immediately instead."
 ;;   eshell: for when `eat is too gluttonous
 ;;   flymake: making things on the fly
 ;;   recentf: recent files for recent stuff
-;;   tab-bar: keeping tabs on projects (not buffers)
 ;;   saveplace, savehist: open to last location and persist minibuffer history
 ;;   hl-line: highlight the current line... that is it
 ;;   tramp: edit files remotely like a wizard
@@ -443,19 +442,6 @@ If this is a daemon session, load them all immediately instead."
   ;; From doom, clean recentf at exit unless it is a daemon 
   (setq recentf-auto-cleanup (if (daemonp) 300))
   (add-hook 'kill-emacs-hook #'recentf-cleanup))
-(use-package tab-bar
-  :ensure nil
-  :commands tab-new
-  :config
-  ;; Better colors and no ugly boxes
-  (set-face-attribute 'tab-bar nil :background "unspecified" :inherit 'default)
-  (set-face-attribute 'tab-bar-tab-inactive nil :background "unspecified" :inherit 'font-lock-comment-face)
-  (set-face-attribute 'tab-bar-tab nil :background "unspecified" :inherit 'default :box nil)
-  ;; Top padding, clean up buttons, add icon, and sleeker tabs
-  (defun tab-bar-icon () (propertize " " 'face '(:inherit 'default :height 300) 'display' (raise -0.10)))
-  (setq tab-bar-format (butlast tab-bar-format))
-  (add-to-list 'tab-bar-format 'tab-bar-icon)
-  )
 (use-package saveplace
   :ensure nil
   :hook (on-first-file . save-place-mode))
@@ -551,7 +537,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   evil-indent-plus: indentation text objects
 ;;   evil-matchit: matches vim's matchit
 ;;   evil-textobj-anyblock: block textobjs and look ahead for them
-;;   doom-modeline: modeline
+;;   doom-modeline: sleek modeline, which I placed in the header actually
+;;   mini-echo: for showing tabs in the echo-msg area thingy
 ;;   anzu and evil anzu: anzu, shows search results, used by 'doom-modeline'
 ;;   better-jumper: more predictable jumping
 ;;   evil-textobj-tree-sitter: treesitter powered text objects
@@ -669,7 +656,7 @@ If this is a daemon session, load them all immediately instead."
     (and (>= char ?2) (<= char ?9)))
 
   (leader-keys
-    "<tab>" '("find tabs" . tab-bar-select-tab-by-name)
+    "t" '("find tabs" . tab-bar-select-tab-by-name)
     "SPC"   '("alt buffer" . evil-switch-to-windows-last-buffer)
     "f"     '("files" . find-file)
     "xb"    '("kill buffer" . kill-current-buffer)
@@ -729,8 +716,35 @@ If this is a daemon session, load them all immediately instead."
 	doom-modeline-irc nil
 	doom-modeline-time nil)
   :config
-  ;; Simpler modeline for sidebar
-  (doom-modeline-def-modeline 'sidebar '(bar buffer-info-simple) '()))
+  (setq-default header-line-format '("%e" (:eval (doom-modeline-format--main)))))
+;; Make this prettier later
+;; (use-package mood-line
+;;   :hook (on-init-ui . mood-line-mode)
+;;   :config
+;;   (setq mood-line-glyph-alist mood-line-glyphs-fira-code)
+;;   (setq-default header-line-format '("%e" (:eval (mood-line--process-format mood-line-format)))))
+(use-package mini-echo
+  :hook (doom-modeline-mode . mini-echo-mode)
+  ;; :hook (mood-line-mode . mini-echo-mode)
+  :config
+  ;; Better cooler looking tabs (kind of)
+  (setq tab-bar-new-button ""
+	tab-bar-close-button-show nil
+	tab-bar-back-button ""
+	tab-bar-auto-width nil
+	tab-bar-separator "    ")
+  (set-face-attribute 'tab-bar nil :background "unspecified" :inherit 'default)
+  (set-face-attribute 'tab-bar-tab-inactive nil :background "unspecified" :inherit 'font-lock-comment-face)
+  (set-face-attribute 'tab-bar-tab nil :background "unspecified" :inherit 'default :box nil)
+  ;; TODO: can optimize this probably by never fetching and just using :update-advice on tab change
+  ;; TODO: use project name instead of buffer name?
+  (mini-echo-define-segment "tabs"
+    "Display the list of tabs"
+    :fetch (mini-echo-segment--print (mini-echo-segment--extract (tab-bar-format-tabs))))
+  (defun my-detect() '(:both ("tabs")))
+  (setq mini-echo-persistent-function 'my-detect
+	mini-echo-persistent-rule '(:both ("tabs"))
+        mini-echo-temporary-rule nil))
 (use-package evil-anzu)
 (use-package anzu
   :after-call evil-ex-start-search evil-ex-start-word-search evil-ex-search-activate-highlight
