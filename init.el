@@ -875,6 +875,10 @@ If this is a daemon session, load them all immediately instead."
   :hook (on-first-buffer . dtrt-indent-global-mode)
   :config
   (setq dtrt-indent-max-lines 2000))
+(use-package treesit-fold
+  ;; :hook (on-first-file . global-treesit-fold-indicators-mode)
+  :hook (on-first-file . global-treesit-fold-mode)
+  :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold.git" :rev :newest))
 
 ;;;; Development
 ;;
