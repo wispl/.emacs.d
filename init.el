@@ -871,8 +871,8 @@ If this is a daemon session, load them all immediately instead."
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
   :general
   (general-def 'normal 'override
-    "gd" #'xref-find-definitions
-    "gr" #'xref-find-references)
+    "gd" #'xref-find-definitions)
+    ;; "gr" #'xref-find-references)
   :config
   (setq dumb-jump-prefer-searcher 'rg
 	xref-show-definitions-function #'consult-xref)
@@ -980,10 +980,11 @@ If this is a daemon session, load them all immediately instead."
     "y"   #'dired-do-copy)
   :config
   (dirvish-override-dired-mode)
-  (setq dirvish-reuse-session 'open)
-  (setq dirvish-subtree-always-show-state t)
-  (setq dirvish-side-width 27)
-
+  (setq dirvish-reuse-session 'open
+        dirvish-subtree-always-show-state t
+	dirvish-use-header-line 'global
+	dirvish-use-mode-line nil
+        dirvish-side-width 27)
   ;; kanagawa (upstream ?) 
   (set-face-attribute 'dirvish-inactive nil :inherit 'mode-line-inactive)
   (set-face-attribute 'dirvish-hl-line nil :inherit 'hl-line)
@@ -999,14 +1000,11 @@ If this is a daemon session, load them all immediately instead."
   (setq dirvish-hide-details '(dirvish dirvish-side)
 	dirvish-hide-cursor '(dirvish dirvish-side))
   (setq dirvish-subtree-state-style 'nerd)
-  (setq dirvish-attributes '(file-size nerd-icons subtree-state vc-state)
-	dirvish-mode-line-format
-	'(:left (sort file-time symlink) :right (omit yank index)))
+  (setq dirvish-attributes '(file-size nerd-icons subtree-state vc-state))
   ;; Not sure why but -11 gives perfect height
   (when-let (height (- (bound-and-true-p doom-modeline-height) 11))
-    (setq dirvish-mode-line-height height)
     (setq dirvish-header-line-height height))
-
+  ;; (setq dirvish-header-line-height 21)
   ;; Allow focusing the side normally
   (setq dirvish-side-window-parameters
 	'((no-other-window . nil)
