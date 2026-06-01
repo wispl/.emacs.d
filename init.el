@@ -229,6 +229,14 @@ If this is a daemon session, load them all immediately instead."
 	;; No need to have duplicates...
 	kill-do-not-save-duplicates t
 
+	;; Never show tab-bar
+	tab-bar-show nil
+
+	;; Ignore case
+	read-file-name-completion-ignore-case t
+	read-buffer-completion-ignore-case t
+	completion-ignore-case t
+
 	;; Vertical splits over horizontal ones
 	split-width-threshold nil
 	split-height-threshold 160
@@ -262,8 +270,8 @@ If this is a daemon session, load them all immediately instead."
 
   ;; No blinking cursor. Also set highlighted cursor line
   (blink-cursor-mode -1)
-  (setq window-divider-default-bottom-width 1
-	window-divider-default-right-width 1)
+  (setq window-divider-default-bottom-width 24
+	window-divider-default-right-width 24)
   (add-hook 'on-init-ui-hook #'window-divider-mode)
 
   ;; Set encoding
