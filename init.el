@@ -213,12 +213,6 @@ If this is a daemon session, load them all immediately instead."
   (setq idle-update-delay 1)
   ;; Fonts
   (add-to-list 'default-frame-alist '(font ."FantasqueSansM Nerd Font Mono-20"))
-  ;; Tab bar
-  (setq tab-bar-new-button ""
-	tab-bar-close-button-show nil
-	tab-bar-back-button ""
-	tab-bar-auto-width nil
-	tab-bar-separator "    ")
   ;; Behavior
   (setq use-file-dialog nil
 	;; I find these clunky to use, and backups of the files themselves can be
@@ -1063,6 +1057,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   org-mode: magical unicorn
 ;;   org-roam: progenitor of all madness
 ;;   org-roam-ui, websocket: the main point of org-roam :)
+;;   org-chef: unicorn fried rice, you are saying an unicorn fried this rice?
 ;;   evil-org-roam: evil unicorn
 ;;   auctex: the golden standard of TeX editing (needs latexmk)
 ;;   aas, laas: super fast autosnippets for latex and other stuff
@@ -1258,7 +1253,15 @@ If this is a daemon session, load them all immediately instead."
 	    ("n" "note" entry (file "inbox.org")
 	     "* %? :note:\n%U")
 	    ("m" "meeting" entry (file+headline "agenda.org" "Future")
-	     "* MEETING: %?\nSCHEDULED: <%<%Y-%m-%d %H:00>>")))
+	     "* MEETING: %?\nSCHEDULED: <%<%Y-%m-%d %H:00>>")
+	    ("c" "cookbook" entry (file "~/org/cookbook.org")
+	     "%(org-chef-get-recipe-from-url)"
+	     :empty-lines 1)
+	    ("z" "protocol cookbook" entry (file "~/org/cookbook.org")
+	     "%(org-chef-get-recipe-string-from-url \"%:link\")"
+	     :empty-lines 1)
+	    ("m" "manual cookbook" entry (file "~/org/cookbook.org")
+	     "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")))
     ;; Tags
     ;;   Reading is for books or articles
     ;;   Resource is for something I need to continuously refer back to
@@ -1436,6 +1439,7 @@ If this is a daemon session, load them all immediately instead."
 	org-roam-ui-follow t
 	org-roam-ui-update-on-save t
 	org-roam-ui-open-on-start t))
+(use-package org-chef)
 (use-package evil-org
   :hook ((org-mode . evil-org-mode)
 	 (org-agenda-mode . evil-org-mode))
