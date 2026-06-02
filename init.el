@@ -314,6 +314,12 @@ If this is a daemon session, load them all immediately instead."
 	   (direction . below)
 	   (slot . -1)
 	   (window-parameters . ((split-window . #'ignore))))
+	  ("\\*.*\\-eat\\*"
+	   (display-buffer-at-bottom)
+	   (window-height . 0.30)
+	   (side . right)
+	   (direction . below)
+	   (window-parameters . ((split-window . #'ignore))))
 	  ;; Preview pdfs in the sidebar
 	  ;; ("\\.pdf\\'"
 	  ((major-mode . pdf-view-mode)
@@ -776,6 +782,8 @@ If this is a daemon session, load them all immediately instead."
 ;;   vundo: visual undo
 ;;   dumb-jump: a smart dumb-jump
 ;;   dtrt-indent: guess the indentation so I don't have to
+;;   treesit-fold: treesitter powered folding!
+;;   popper: calm pop ups into patient hop ups
 ;; Editing is a hard job
 (use-package consult
   :general
@@ -894,7 +902,7 @@ If this is a daemon session, load them all immediately instead."
 	'("\\*Messages\\*"
 	  "Output\\*$"
 	  "\\*Async Shell Command\\*"
-	  "\\*eat\\*" ; Make the global eat terminal a pop up
+	  "\\*eat\\*" ; Make the global eat terminal a popup
 	  help-mode
 	  compilation-mode)))
 ;;;; Development
