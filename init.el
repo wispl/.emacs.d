@@ -1208,7 +1208,7 @@ If this is a daemon session, load them all immediately instead."
   :defer-incrementally
   calendar find-func format-spec org-macs org-compat org-faces org-entities
   org-list org-pcomplete org-src org-footnote org-macro ob org org-agenda
-  org-capture
+  org-capture ox
   :hook (org-mode . visual-line-mode)
   :general
   (leader-keys
