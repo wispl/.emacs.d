@@ -879,7 +879,24 @@ If this is a daemon session, load them all immediately instead."
   ;; :hook (on-first-file . global-treesit-fold-indicators-mode)
   :hook (on-first-file . global-treesit-fold-mode)
   :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold.git" :rev :newest))
-
+(use-package popper
+  :hook (on-first-buffer . popper-mode)
+  :config
+  (leader-keys
+    "op" '("Open Popup (popper)" . popper-toggle)
+    "cp" '("Create Popup (popper)" . popper-toggle-type))
+  ;; Evil has it mapped to paste above and below, which is not particularly
+  ;; useful, so we map it to cycle popups insteald
+  (general-def 'normal 'override
+    "]p" #'popper-cycle
+    "[p" #'popper-cycle-backwards)
+  (setq popper-reference-buffers
+	'("\\*Messages\\*"
+	  "Output\\*$"
+	  "\\*Async Shell Command\\*"
+	  "\\*eat\\*" ; Make the global eat terminal a pop up
+	  help-mode
+	  compilation-mode)))
 ;;;; Development
 ;;
 ;; Actually using Emacs for coding. Proposterous, I know.
