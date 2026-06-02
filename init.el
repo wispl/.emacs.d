@@ -1998,11 +1998,8 @@ If this is a daemon session, load them all immediately instead."
              (org-agenda-to-appt t))))))
 (use-package restart-emacs :commands (restart-emacs))
 (use-package ox-hugo
-  ;; :commands org-export-dispatch
-  ;; :after ox
-  :init
-  (with-eval-after-load 'ox
-    (require 'ox-hugo))
+  :after ox
+  :config
   (setq org-hugo-base-dir "~/org"
 	org-hugo-default-section-directory "notes")
   ;; Set of filter functions to adapt ox-hugo to export into zola's
@@ -2036,7 +2033,7 @@ If this is a daemon session, load them all immediately instead."
   ;; Add functions to relevant filter functions
   (setq org-export-filter-options-functions (list #'my/ox-hugo-filter-dates))
   (setq org-export-filter-final-output-functions (list#'my/ox-hugo-rename-props))
-
+  ;; https://github.com/kaushalmodi/ox-hugo/discussions/585#discussioncomment-2335203
   (defun ox-hugo/export-all (&optional org-files-root-dir dont-recurse)
     (interactive)
     (let* ((org-files-root-dir (or org-files-root-dir default-directory))
