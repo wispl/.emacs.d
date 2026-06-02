@@ -1371,13 +1371,8 @@ If this is a daemon session, load them all immediately instead."
     (let ((filename (file-name-nondirectory filepath)))
       (when (string-match "\\([0-9]\\{12\\}\\)" filename) (match-string 1 filename))))
 
+  ;; These insert :date and :updated into properties automatically
   (defun org-roam-insert-created-property ()
-    "Insert :created: property for an Org-roam node.
-
-     Does not override the property if it already exists.
-
-     Calculation of the creation date is based on the filename of the note,
-     and assumes the default Org-roam naming scheme."
     (interactive)
     (when (org-roam-file-p)
       ;; Don't update if the created property already exists
@@ -1392,7 +1387,6 @@ If this is a daemon session, load them all immediately instead."
               (org-set-property "date" creation-time)))))))
 
   (defun org-roam-insert-modified-property ()
-    "Update the :modified: property for an Org-roam node upon saving."
     (when (org-roam-file-p)
       (save-excursion
 	;; Ensure property is applied to the whole file
@@ -2003,4 +1997,67 @@ If this is a daemon session, load them all immediately instead."
            (let ((inhibit-message t))
              (org-agenda-to-appt t))))))
 (use-package restart-emacs :commands (restart-emacs))
+(use-package ox-hugo
+  ;; :commands org-export-dispatch
+  ;; :after ox
+  :init
+  (with-eval-after-load 'ox
+    (require 'ox-hugo))
+  (setq org-hugo-base-dir "~/org"
+	org-hugo-default-section-directory "notes")
+  ;; Set of filter functions to adapt ox-hugo to export into zola's
+  ;; format. Since I store created and updated date in the properties drawer, an
+  ;; extra filter function is needed to parse them out.
+  ;; Parses :updated and :date properties in the drawer and inserts it into the front-matter
+  (defun my/ox-hugo-filter-dates (info backend)
+    (let ((date (org-entry-get 1 "date"))
+	  (updated (org-entry-get 1 "updated")))
+      (when date
+	(setq info (plist-put info :date (replace-regexp-in-string "^\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\).*" "\\1-\\2-\\3" date))))
+      (when updated
+	(setq info (plist-put info :hugo-lastmod (replace-regexp-in-string "^\\([0-9]\\{4\\}\\)\\([0-9]\\{2\\}\\)\\([0-9]\\{2\\}\\).*" "\\1-\\2-\\3" updated))))
+      info))
+  ;; Renames from lastmod to updated
+  (defun my/ox-hugo-rename-props (text backend info)
+    ;; TODO: make these replace first match only, for perf reasons
+    ;; To replace only the first match (if any), make REGEXP match up to \'
+    ;; and replace a sub-expression, e.g.
+    ;;  (replace-regexp-in-string "\\(foo\\).*\\'" "bar" " foo foo" nil nil 1)
+    ;;    => " bar foo"
+    ;; Could not get the above to work, not sure why
+
+    ;; Rename lastmod to updated and tags to a structure expected by zola
+    (setq text (replace-regexp-in-string "^lastmod = " "updated= " text))
+    (setq text (replace-regexp-in-string "^tags = " "[taxonomies]\ntags = " text))
+    ;; Zola has different link referencing scheme, so we need to change Hugo's to it
+    (setq text (replace-regexp-in-string "{{< relref \"\\([^\"]+\\)\" >}}" "@/notes/\\1" text))
+    ;; Remove draft = false, we don't need it
+    (replace-regexp-in-string "^draft = false\n" "" text))
+  ;; Add functions to relevant filter functions
+  (setq org-export-filter-options-functions (list #'my/ox-hugo-filter-dates))
+  (setq org-export-filter-final-output-functions (list#'my/ox-hugo-rename-props))
+
+  (defun ox-hugo/export-all (&optional org-files-root-dir dont-recurse)
+    (interactive)
+    (let* ((org-files-root-dir (or org-files-root-dir default-directory))
+           (dont-recurse (or dont-recurse (and current-prefix-arg t)))
+           (search-path (file-name-as-directory (expand-file-name org-files-root-dir)))
+           (org-files (if dont-recurse
+                          (directory-files search-path :full "\.org$")
+			(directory-files-recursively search-path "\.org$")))
+           (num-files (length org-files))
+           (cnt 1))
+      (if (= 0 num-files)
+          (message (format "No Org files found in %s" search-path))
+	(progn
+          (message (format (if dont-recurse
+                               "[ox-hugo/export-all] Exporting %d files from %S .."
+                             "[ox-hugo/export-all] Exporting %d files recursively from %S ..")
+                           num-files search-path))
+          (dolist (org-file org-files)
+            (with-current-buffer (find-file-noselect org-file)
+              (message (format "[ox-hugo/export-all file %d/%d] Exporting %s" cnt num-files org-file))
+              (org-hugo-export-wim-to-md :all-subtrees)
+              (setq cnt (1+ cnt))))
+          (message "Done!"))))))
 ;;;; --------------------------- End of the init file ----------------------------
