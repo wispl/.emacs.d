@@ -886,7 +886,28 @@ If this is a daemon session, load them all immediately instead."
 (use-package treesit-fold
   ;; :hook (on-first-file . global-treesit-fold-indicators-mode)
   :hook (on-first-file . global-treesit-fold-mode)
-  :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold.git" :rev :newest))
+  :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold.git" :rev :newest)
+  :config
+(set-face-attribute 'treesit-fold-fringe-face nil :inherit 'font-lock-comment-face)
+  (with-eval-after-load 'treesit-fold-indicators
+    (define-fringe-bitmap 'treesit-fold-indicators-fr-center (vector #b00011000) 1 8 '(top t))
+    (define-fringe-bitmap 'treesit-fold-indicators-fr-end-left (vector #b00011000) 1 8 '(top t))
+    (define-fringe-bitmap 'treesit-fold-indicators-fr-plus
+      (vector #b00110000
+	      #b00011000
+	      #b00001100
+	      #b00000110
+	      #b00001100
+	      #b00011000
+	      #b00110000))
+    (define-fringe-bitmap 'treesit-fold-indicators-fr-minus-tail
+      (vector #b00000000
+	      #b00000000
+	      #b11000011
+	      #b01100110
+	      #b00111100
+	      #b00011000
+	      #b00000000))))
 (use-package popper
   :hook (on-first-buffer . popper-mode)
   :config
