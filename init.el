@@ -736,6 +736,10 @@ If this is a daemon session, load them all immediately instead."
   (set-face-attribute 'tab-bar nil :background "unspecified" :inherit 'default)
   (set-face-attribute 'tab-bar-tab-inactive nil :background "unspecified" :inherit 'font-lock-comment-face)
   (set-face-attribute 'tab-bar-tab nil :background "unspecified" :inherit 'default :box nil)
+  ;; (defun my/tab-bar-tab-name()
+  ;;   (require 'project)
+  ;;   (project-name (project-current)))
+  ;; (setq tab-bar-tab-name-function #'my/tab-bar-tab-name)
   ;; TODO: can optimize this probably by never fetching and just using :update-advice on tab change
   ;; TODO: use project name instead of buffer name?
   (mini-echo-define-segment "tabs"
@@ -1169,6 +1173,7 @@ If this is a daemon session, load them all immediately instead."
   (dolist (mapping
 	   '((python-mode . python-ts-mode)
 	     (css-mode . css-ts-mode)
+	     (yaml-mode . yaml-ts-mode)
 	     (typescript-mode . typescript-ts-mode)
 	     (js-mode . js-ts-mode)
 	     (bash-mode . bash-ts-mode)
@@ -1388,14 +1393,17 @@ If this is a daemon session, load them all immediately instead."
 	(end-of-line)
 	(insert " [/]")
 	(org-update-statistics-cookies nil))))
+  (defun my-org-yank-dir() (concat (filename-name-sans-extension (buffer-file-name) "images")))
+  ;; (setq org-yank-image-save-method #'my-org-yank-dir)
   (localleader-keys 'org-mode-map
-		    "s" '("org state" . org-todo)
-		    "j" '("org jump heading" . consult-org-heading)
-		    "r" '("org refile" . org-refile)
-		    "t" '("org tag" . org-set-tags-command)
-		    "e" '("org effort" . org-set-effort)
-		    "p" '("org make project" . make-org-project)
-		    "c" '("org clock" . org-clock-in)))
+    "u" '("org upload" . yank-media)
+    "s" '("org state" . org-todo)
+    "j" '("org jump heading" . consult-org-heading)
+    "r" '("org refile" . org-refile)
+    "t" '("org tag" . org-set-tags-command)
+    "e" '("org effort" . org-set-effort)
+    "p" '("org make project" . make-org-project)
+    "c" '("org clock" . org-clock-in)))
 (use-package org-roam
   :general
   (leader-keys "nm" '("notes mind" . org-roam-node-find))
@@ -1733,38 +1741,38 @@ If this is a daemon session, load them all immediately instead."
     "definition" '(tempel "\\begin{definition}[" (p (read-string "Definition: ")) "]" n> q n "\\end{definition}" >))
   ;; Snippets which expand inside qty (for units)
   ;; I am only going to put the most common ones with the most common abbreviations
-  (aas-set-snippets 'laas-mode
-    :cond 'my/inside-qty
-    ;; Prefixes
-    "mega"    "\\mega"
-    "kilo"    "\\kilo"
-    "centi"   "\\centi"
-    "milli"   "\\milli"
-    "micro"   "\\micro"
-    ;; "pico"    "\\pico"
-    ;; Exponents
-    "per"   "\\per"
-    ;; "ss"     "\\square"
-    ;; "cc"     "\\cubic"
-    ;; Units
-    "newton" "\\newton"
-    "joule"  "\\joule"
-    "watt"   "\\watt"
-    "gram"   "\\gram"
-    "liter"  "\\liter"
-    "meter"  "\\meter"
-    "pascal" "\\pascal"
-    "second" "\\second"
-    ;; non SI
-    "lbf"   "\\lbf"
-    "lb"    "\\lb"
-    "slug"  "\\slug"
-    "psi"   "\\psi"
-    "feet"  "\\feet"
-    ;; These have minimal conflicts and are used a lot so shorthands are justified
-    "kg"  "\\kilo\\gram"
-    "vel" "\\meter\\per\\second"
-    "acc" "\\meter\\per\\square\\second")
+  ;; (aas-set-snippets 'laas-mode
+  ;;   :cond 'my/inside-qty
+  ;;   ;; Prefixes
+  ;;   "mega"    "\\mega"
+  ;;   "kilo"    "\\kilo"
+  ;;   "centi"   "\\centi"
+  ;;   "milli"   "\\milli"
+  ;;   "micro"   "\\micro"
+  ;;   ;; "pico"    "\\pico"
+  ;;   ;; Exponents
+  ;;   "per"   "\\per"
+  ;;   ;; "ss"     "\\square"
+  ;;   ;; "cc"     "\\cubic"
+  ;;   ;; Units
+  ;;   "newton" "\\newton"
+  ;;   "joule"  "\\joule"
+  ;;   "watt"   "\\watt"
+  ;;   "gram"   "\\gram"
+  ;;   "liter"  "\\liter"
+  ;;   "meter"  "\\meter"
+  ;;   "pascal" "\\pascal"
+  ;;   "second" "\\second"
+  ;;   ;; non SI
+  ;;   "lbf"   "\\lbf"
+  ;;   "lb"    "\\lb"
+  ;;   "slug"  "\\slug"
+  ;;   "psi"   "\\psi"
+  ;;   "feet"  "\\feet"
+  ;;   ;; These have minimal conflicts and are used a lot so shorthands are justified
+  ;;   "kg"  "\\kilo\\gram"
+  ;;   "vel" "\\meter\\per\\second"
+  ;;   "acc" "\\meter\\per\\square\\second")
   ;; Reset these snippets, we will override them later
   (aas-set-snippets 'laas-mode
     "RR" nil
