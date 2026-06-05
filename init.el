@@ -391,6 +391,7 @@ If this is a daemon session, load them all immediately instead."
 ;;   saveplace, savehist: open to last location and persist minibuffer history
 ;;   hl-line: highlight the current line... that is it
 ;;   tramp: edit files remotely like a wizard
+;;   outline: super simple folding, used for elisp since it works so well
 ;; Changes should be fairly minimal if possible
 (use-package which-key
   :ensure nil
@@ -523,6 +524,9 @@ If this is a daemon session, load them all immediately instead."
   (defun $memoize-counsel-git-cands (orig dir)
     ($memoize-remote (magit-toplevel dir) '$counsel-git-cands-cache orig dir))
   (advice-add 'counsel-git-cands :around #'$memoize-counsel-git-cands))
+(use-package outline
+  :ensure nil
+  :hook (emacs-lisp-mode . outline-minor-mode))
 
 ;;;; Evil
 ;;
